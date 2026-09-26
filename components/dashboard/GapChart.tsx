@@ -1,4 +1,5 @@
-import Link from 'next/link';
+'use client';
+
 import React from 'react';
 
 import { ClassGapSummary } from '@/lib/types';
@@ -8,120 +9,118 @@ interface GapChartProps {
 }
 
 export function GapChart({ summary }: GapChartProps) {
-  const regroupingCount = summary.errorDistribution.borrowed_without_decrement || 10;
-  const placeValueCount = summary.errorDistribution.smaller_from_larger_ones || 5;
-  const calculationCount = summary.errorDistribution.calculation_error || 2;
-  const wordProblemCount = 1;
+  const regroupingCount = summary.errorDistribution.borrowed_without_decrement || 0;
+  const placeValueCount = summary.errorDistribution.smaller_from_larger_ones || 0;
+  const factsCount = summary.errorDistribution.calculation_error || 0;
+  const masteryCount = summary.errorDistribution.no_error || 0;
+  const total = summary.totalStudents || 30;
 
-  const totalGapStudents = summary.needsRemediationCount || 18;
-
-  const distribution = [
-    { label: 'Regrouping', count: regroupingCount, percentage: 56, color: '#FF4D4D', dotClass: 'bg-red-500' },
-    { label: 'Place Value', count: placeValueCount, percentage: 28, color: '#FBBF24', dotClass: 'bg-amber-400' },
-    { label: 'Calculation', count: calculationCount, percentage: 11, color: '#3B82F6', dotClass: 'bg-blue-500' },
-    { label: 'Word Problem', count: wordProblemCount, percentage: 6, color: '#A855F7', dotClass: 'bg-purple-500' },
+  const gaps = [
+    {
+      title: 'Regrouping',
+      count: regroupingCount,
+      color: 'bg-rose-500',
+      bgColor: 'bg-rose-50 dark:bg-rose-950/20',
+      borderColor: 'border-rose-200 dark:border-rose-900',
+      textColor: 'text-rose-700 dark:text-rose-300',
+      desc: 'Borrowed 10 to ones but failed to decrement tens (83−47 = 46)',
+      percentage: Math.round((regroupingCount / total) * 100),
+    },
+    {
+      title: 'Place Value',
+      count: placeValueCount,
+      color: 'bg-amber-500',
+      bgColor: 'bg-amber-50 dark:bg-amber-950/20',
+      borderColor: 'border-amber-200 dark:border-amber-900',
+      textColor: 'text-amber-700 dark:text-amber-300',
+      desc: 'Subtracted smaller ones digit from larger ones digit (7−3 = 4)',
+      percentage: Math.round((placeValueCount / total) * 100),
+    },
+    {
+      title: 'Subtraction Facts',
+      count: factsCount,
+      color: 'bg-sky-500',
+      bgColor: 'bg-sky-50 dark:bg-sky-950/20',
+      borderColor: 'border-sky-200 dark:border-sky-900',
+      textColor: 'text-sky-700 dark:text-sky-300',
+      desc: 'Single-digit arithmetic recall slips (e.g. 13−7 = 5)',
+      percentage: Math.round((factsCount / total) * 100),
+    },
+    {
+      title: 'Mastery',
+      count: masteryCount,
+      color: 'bg-emerald-500',
+      bgColor: 'bg-emerald-50 dark:bg-emerald-950/20',
+      borderColor: 'border-emerald-200 dark:border-emerald-900',
+      textColor: 'text-emerald-700 dark:text-emerald-300',
+      desc: 'Demonstrated correct regrouping and subtraction facts across all items',
+      percentage: Math.round((masteryCount / total) * 100),
+    },
   ];
 
   return (
-    <div className="bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 rounded-3xl p-6 sm:p-7 shadow-xs flex flex-col justify-between space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-extrabold text-slate-900 dark:text-zinc-50 tracking-tight">
-          Class Learning Gap Snapshot
-        </h3>
-        <div className="w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-sm font-bold border border-emerald-200/60 dark:border-emerald-800/60">
-          🧘
+    <div className="glass-card rounded-2xl p-6 sm:p-7 shadow-xs space-y-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-zinc-100 dark:border-zinc-800/80 pb-4">
+        <div>
+          <h3 className="text-lg font-black text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
+            <span>📊</span> Visual Class Learning Gap Distribution
+          </h3>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+            Standardized NIPUN/FLN vocabulary: <strong className="text-zinc-700 dark:text-zinc-300">Regrouping</strong>, <strong className="text-zinc-700 dark:text-zinc-300">Place Value</strong>, and <strong className="text-zinc-700 dark:text-zinc-300">Subtraction Facts</strong>.
+          </p>
         </div>
+        <span className="text-xs font-mono font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 px-3 py-1.5 rounded-xl border border-indigo-200/60 dark:border-indigo-800/60 shadow-2xs">
+          N = {total} Students
+        </span>
       </div>
 
-      {/* Donut Chart + Legend Row */}
-      <div className="flex flex-col sm:flex-row items-center justify-around gap-6 py-2">
-        {/* SVG Donut Chart */}
-        <div className="relative w-44 h-44 flex items-center justify-center shrink-0">
-          <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-            {/* Background Ring */}
-            <path
-              className="text-slate-100 dark:text-zinc-800"
-              strokeWidth="4"
-              stroke="currentColor"
-              fill="none"
-              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-            />
-            {/* Segments: Regrouping (56%), Place Value (28%), Calculation (11%), Word Problem (6%) */}
-            <path
-              stroke="#FF4D4D"
-              strokeWidth="4.2"
-              strokeDasharray="56, 100"
-              strokeDashoffset="0"
-              strokeLinecap="round"
-              fill="none"
-              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-            />
-            <path
-              stroke="#FBBF24"
-              strokeWidth="4.2"
-              strokeDasharray="28, 100"
-              strokeDashoffset="-57"
-              strokeLinecap="round"
-              fill="none"
-              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-            />
-            <path
-              stroke="#3B82F6"
-              strokeWidth="4.2"
-              strokeDasharray="11, 100"
-              strokeDashoffset="-86"
-              strokeLinecap="round"
-              fill="none"
-              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-            />
-            <path
-              stroke="#A855F7"
-              strokeWidth="4.2"
-              strokeDasharray="6, 100"
-              strokeDashoffset="-98"
-              strokeLinecap="round"
-              fill="none"
-              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-            />
-          </svg>
-
-          {/* Center Donut Label */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-            <span className="text-3xl font-black text-slate-900 dark:text-zinc-50 leading-none">
-              {totalGapStudents}
-            </span>
-            <span className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 mt-1 max-w-[80px] leading-tight">
-              Students with gaps
-            </span>
-          </div>
+      {/* Cumulative Stacked Bar */}
+      <div className="space-y-2">
+        <div className="flex justify-between text-xs text-zinc-500 dark:text-zinc-400 font-semibold">
+          <span>Class Cohort Distribution</span>
+          <span>100% Total Representation</span>
         </div>
-
-        {/* Legend List */}
-        <div className="space-y-3.5 w-full max-w-[200px]">
-          {distribution.map((item) => (
-            <div key={item.label} className="flex items-center justify-between text-xs font-bold">
-              <div className="flex items-center gap-2.5">
-                <span className={`w-3 h-3 rounded-full ${item.dotClass}`} />
-                <span className="text-slate-700 dark:text-zinc-300 font-semibold">{item.label}</span>
-              </div>
-              <span className="font-extrabold text-slate-900 dark:text-zinc-100">
-                {item.count} <span className="text-slate-400 font-normal">({item.percentage}%)</span>
-              </span>
-            </div>
+        <div className="w-full h-4 rounded-full overflow-hidden flex bg-zinc-100 dark:bg-zinc-800 p-0.5 shadow-inner">
+          {gaps.map((g) => (
+            <div
+              key={g.title}
+              title={`${g.title}: ${g.count} students (${g.percentage}%)`}
+              className={`${g.color} transition-all duration-500 first:rounded-l-full last:rounded-r-full`}
+              style={{ width: `${g.percentage}%` }}
+            />
           ))}
         </div>
       </div>
 
-      {/* Footer View Details Button */}
-      <div className="flex justify-end pt-2">
-        <Link
-          href="/groups"
-          className="px-5 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-600 dark:text-indigo-300 text-xs font-bold transition-all inline-flex items-center gap-1.5"
-        >
-          <span>View Details</span>
-          <span>→</span>
-        </Link>
+      {/* Breakdown Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-1">
+        {gaps.map((g) => (
+          <div
+            key={g.title}
+            className={`border rounded-2xl p-5 ${g.bgColor} ${g.borderColor} flex flex-col justify-between space-y-3 shadow-2xs transition-all duration-200 hover:-translate-y-0.5`}
+          >
+            <div>
+              <div className="flex items-center justify-between">
+                <span className={`text-[11px] font-black uppercase tracking-wider ${g.textColor}`}>
+                  {g.title}
+                </span>
+                <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-md bg-white/70 dark:bg-zinc-900/70 text-zinc-700 dark:text-zinc-300 shadow-2xs">
+                  {g.percentage}%
+                </span>
+              </div>
+              <div className="mt-2 flex items-baseline gap-1.5">
+                <span className="text-3xl font-black text-zinc-900 dark:text-zinc-50">
+                  {g.count}
+                </span>
+                <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">Students</span>
+              </div>
+            </div>
+
+            <p className="text-[11px] text-zinc-600 dark:text-zinc-300 leading-relaxed border-t border-zinc-200/50 dark:border-zinc-700/50 pt-2.5 font-normal">
+              {g.desc}
+            </p>
+          </div>
+        ))}
       </div>
     </div>
   );

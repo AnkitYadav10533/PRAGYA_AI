@@ -186,3 +186,11 @@
 .animate-pulse-subtle {
   animation: pulseSubtle 3s ease-in-out infinite;
 }
+
+.app-background {
+  background-image: url('/bg-classroom.jpg');
+  background-size: cover;
+  background-position: center center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
