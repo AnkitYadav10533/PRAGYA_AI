@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
 
@@ -73,9 +74,21 @@ export default function Home() {
       <div className="relative max-w-6xl mx-auto space-y-14">
         {/* Hero Section */}
         <div className="text-center space-y-5 max-w-3xl mx-auto pt-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold bg-white/80 dark:bg-zinc-800/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800/80 shadow-xs backdrop-blur-md">
-            <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
-            <span>✨ Harmony-First Hackathon MVP Architecture</span>
+          <div className="flex flex-col items-center gap-3">
+            <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-3xl overflow-hidden bg-white/90 dark:bg-zinc-900/90 p-2 shadow-xl shadow-indigo-500/20 border border-white/60 dark:border-zinc-800/80 backdrop-blur-md hover:scale-105 transition-transform duration-300">
+              <Image
+                src="/logo_pragya.png"
+                alt="PRAGYA Official Logo"
+                width={96}
+                height={96}
+                className="w-full h-full object-contain rounded-2xl"
+                priority
+              />
+            </div>
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold bg-white/80 dark:bg-zinc-800/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800/80 shadow-xs backdrop-blur-md">
+              <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
+              <span>✨ Harmony-First Hackathon MVP Architecture</span>
+            </div>
           </div>
 
           <h1 className="text-4xl sm:text-6xl font-black text-zinc-900 dark:text-zinc-50 tracking-tight leading-[1.1]">
