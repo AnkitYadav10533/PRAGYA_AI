@@ -5,11 +5,13 @@ import { usePathname } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
 import { Button } from '@/components/shared/Button';
+import { getTranslation, Language } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
 export function Navbar() {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
+  const [lang, setLang] = useState<Language>('en');
 
   // JS Scroll listener for dynamic glassmorphism island effect
   useEffect(() => {
@@ -25,14 +27,28 @@ export function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    const saved = localStorage.getItem('pragya_lang') as Language;
+    if (saved === 'hi' || saved === 'en') {
+      setLang(saved);
+    }
+  }, []);
+
+  const toggleLanguage = () => {
+    const nextLang: Language = lang === 'en' ? 'hi' : 'en';
+    setLang(nextLang);
+    localStorage.setItem('pragya_lang', nextLang);
+    window.dispatchEvent(new Event('language_changed'));
+  };
+
   const navLinks = [
-    { href: '/dashboard', label: 'Dashboard', icon: '📊' },
-    { href: '/class', label: 'Class 3-A', icon: '🏫' },
-    { href: '/assess', label: 'Assess', icon: '📝' },
-    { href: '/diagnose', label: 'Diagnose & Verify', icon: '🔍' },
-    { href: '/groups', label: 'Groups', icon: '👥' },
-    { href: '/intervene', label: 'Intervene', icon: '🛠' },
-    { href: '/reassess', label: 'Progress', icon: '📈' },
+    { href: '/dashboard', label: lang === 'hi' ? 'डैशबोर्ड' : 'Dashboard', icon: '📊' },
+    { href: '/class', label: lang === 'hi' ? 'कक्षा ३-अ' : 'Class 3-A', icon: '🏫' },
+    { href: '/assess', label: lang === 'hi' ? 'आकलन' : 'Assess', icon: '📝' },
+    { href: '/diagnose', label: lang === 'hi' ? 'निदान व सत्यापन' : 'Diagnose & Verify', icon: '🔍' },
+    { href: '/groups', label: lang === 'hi' ? 'समूह' : 'Groups', icon: '👥' },
+    { href: '/intervene', label: lang === 'hi' ? 'हस्तक्षेप' : 'Intervene', icon: '🛠' },
+    { href: '/reassess', label: lang === 'hi' ? 'प्रगति' : 'Progress', icon: '📈' },
   ];
 
   return (
@@ -62,11 +78,11 @@ export function Navbar() {
               <span className="text-base sm:text-lg font-black tracking-tight text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
                 PRAGYA
                 <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-indigo-100/90 text-indigo-800 dark:bg-indigo-950/80 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800/80 shadow-2xs">
-                  FLN MVP
+                  {getTranslation(lang, 'fln_tag')}
                 </span>
               </span>
               <p className="text-[10px] sm:text-[11px] font-bold text-zinc-500 dark:text-zinc-400 leading-none hidden md:block">
-                Subtraction Diagnostic Assistant
+                {getTranslation(lang, 'brand_sub')}
               </p>
             </div>
           </Link>
@@ -97,8 +113,18 @@ export function Navbar() {
           })}
         </nav>
 
-        {/* Golden Demo Quick Action */}
+        {/* Action Controls: Language Toggle & Golden Demo */}
         <div className="relative z-10 flex items-center gap-2">
+          {/* Bilingual Toggle Button */}
+          <button
+            onClick={toggleLanguage}
+            title="Toggle between English and हिन्दी"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-extrabold border border-white/50 dark:border-zinc-700/80 bg-white/80 dark:bg-zinc-800/80 hover:bg-white dark:hover:bg-zinc-700 backdrop-blur-md shadow-xs transition-all text-zinc-700 dark:text-zinc-200 cursor-pointer"
+          >
+            <span>🌐</span>
+            <span>{lang === 'en' ? 'हिन्दी' : 'English'}</span>
+          </button>
+
           <Link href="/assess?studentId=s-01">
             <Button
               size="sm"

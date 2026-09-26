@@ -81,22 +81,31 @@ export type Classroom = ClassRoom;
 
 export type QuestionType = 'warmup' | 'diagnostic';
 
+export interface MCQOption {
+  id: string; // 'A' | 'B' | 'C' | 'D'
+  value: number;
+  text: string;
+  misconception?: string;
+}
+
 export interface AssessmentItem {
   id: string;
   order: number;                    // 1 through 5
   questionNumber?: number;          // 1 through 5 (alias for order)
   prompt: string;                   // e.g. "83 − 47"
-  num1: number;                     // Minuend (e.g. 83)
+  num1: number;                     // Operand A
   operandA?: number;                // Minuend (alias for num1)
-  num2: number;                     // Subtrahend (e.g. 47)
+  num2: number;                     // Operand B
   operandB?: number;                // Subtrahend (alias for num2)
-  correctAnswer: number;            // Expected difference (e.g. 36)
+  correctAnswer: number;            // Expected difference or result
   requiresRegrouping: boolean;
-  operation?: string;               // e.g. "subtraction"
+  operation?: string;               // "addition" | "subtraction" | "multiplication" | "division"
   diagnosticTags?: string[];        // e.g. ["regrouping", "place_value"]
   type: QuestionType;               // Q1 = warmup; Q2-Q5 = diagnostic
   targetSkill: string;              // e.g. "2-digit subtraction with regrouping"
   description: string;
+  options?: MCQOption[];
+  correctOptionId?: string;
 }
 
 export type StandardLearningGap =

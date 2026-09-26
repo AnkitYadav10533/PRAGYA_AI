@@ -7,11 +7,14 @@ import { StudentSelector } from '@/components/assessment/StudentSelector';
 import { Breadcrumb } from '@/components/shared/Breadcrumb';
 import { GapBadge } from '@/components/shared/StatusBadge';
 import { REMEDIAL_ACTIVITIES } from '@/lib/activities';
+import { FIXED_ASSESSMENT_ITEMS } from '@/lib/engine';
+import { speakText } from '@/lib/i18n';
 import { SEED_DIAGNOSES, SEED_STUDENTS } from '@/lib/mock';
 import { Diagnosis, RemedialActivity, Student } from '@/lib/types';
 import {
   getStoredDiagnoses,
   getStoredStudents,
+  getStoredSubmissions,
   updateStudentStatus,
 } from '@/lib/utils';
 
@@ -25,6 +28,8 @@ function InterveneContent() {
   const [diagnosis, setDiagnosis] = useState<Diagnosis | null>(null);
   const [activity, setActivity] = useState<RemedialActivity>(REMEDIAL_ACTIVITIES[0]);
   const [activeStep, setActiveStep] = useState<number>(1);
+  const [targetQuestionId, setTargetQuestionId] = useState<string>('q3');
+  const [studentErrors, setStudentErrors] = useState<string[]>(['q3', 'q5']);
   const [tensCount, setTensCount] = useState<number>(8);
   const [onesCount, setOnesCount] = useState<number>(3);
   const [hasRegrouped, setHasRegrouped] = useState<boolean>(false);
@@ -46,15 +51,55 @@ function InterveneContent() {
       REMEDIAL_ACTIVITIES.find((a) => a.targetedError === currentDiag.primaryErrorType) ||
       REMEDIAL_ACTIVITIES[0];
     setActivity(matched);
+
+    // Check student's submission to highlight their specific error questions
+    const submissions = getStoredSubmissions();
+    const sub = submissions.find((s) => s.studentId === found.id);
+    const errors = sub ? sub.responses.filter((r) => !r.isCorrect).map((r) => r.questionId) : ['q3', 'q5'];
+    setStudentErrors(errors);
+
+    const defaultQId = errors.length > 0 ? errors[0] : 'q3';
+    setTargetQuestionId(defaultQId);
+
+    const targetItem = FIXED_ASSESSMENT_ITEMS.find((q) => q.id === defaultQId) || FIXED_ASSESSMENT_ITEMS[2];
+    setTensCount(Math.floor(targetItem.num1 / 10));
+    setOnesCount(targetItem.num1 % 10);
+    setHasRegrouped(false);
   }, [studentIdParam]);
+
+  const activeQuestion =
+    FIXED_ASSESSMENT_ITEMS.find((q) => q.id === targetQuestionId) || FIXED_ASSESSMENT_ITEMS[2];
+  const num1 = activeQuestion.num1;
+  const num2 = activeQuestion.num2;
+  const tens1 = Math.floor(num1 / 10);
+  const ones1 = num1 % 10;
+  const tens2 = Math.floor(num2 / 10);
+  const ones2 = num2 % 10;
+  const correctAnswer = activeQuestion.correctAnswer;
+  const expectedTens = Math.floor(correctAnswer / 10);
+  const expectedOnes = correctAnswer % 10;
+
+  const handleSelectQuestion = (qId: string) => {
+    setTargetQuestionId(qId);
+    const q = FIXED_ASSESSMENT_ITEMS.find((item) => item.id === qId) || FIXED_ASSESSMENT_ITEMS[2];
+    setTensCount(Math.floor(q.num1 / 10));
+    setOnesCount(q.num1 % 10);
+    setHasRegrouped(false);
+  };
 
   // Manipulative simulation actions
   const handleRegroup = () => {
     if (tensCount > 0 && !hasRegrouped) {
-      setTensCount((prev) => prev - 1); // 8 -> 7
-      setOnesCount((prev) => prev + 10); // 3 -> 13
+      setTensCount(tens1 - 1);
+      setOnesCount(ones1 + 10);
       setHasRegrouped(true);
     }
+  };
+
+  const handleResetManipulatives = () => {
+    setTensCount(tens1);
+    setOnesCount(ones1);
+    setHasRegrouped(false);
   };
 
   const handleCompleteIntervention = () => {
@@ -76,16 +121,16 @@ function InterveneContent() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 w-full space-y-6 flex-1">
         {/* Header & Student Selector */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="glass-card rounded-2xl p-6 sm:p-7 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs font-semibold uppercase tracking-wider text-purple-600 dark:text-purple-400">
+            <div className="flex flex-wrap items-center gap-2 mb-1">
+              <span className="text-xs font-black uppercase tracking-wider text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/70 px-2.5 py-0.5 rounded-full border border-purple-200/60 dark:border-purple-800/60">
                 🟪 Abhinav — Action Layer
               </span>
-              <span className="text-xs text-zinc-400">•</span>
-              <span className="text-xs text-zinc-500">Conveyor Belt Step 6</span>
+              <span className="text-zinc-300 dark:text-zinc-700">•</span>
+              <span className="text-xs text-zinc-500 font-medium">Conveyor Belt Step 6</span>
             </div>
-            <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-zinc-50">
+            <h1 className="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-zinc-50 tracking-tight">
               CPA Remedial Activity — {activity.title}
             </h1>
           </div>
@@ -140,6 +185,47 @@ function InterveneContent() {
           </div>
         </div>
 
+        {/* Practice Problem Selector */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-zinc-50 dark:bg-zinc-800/40 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800">
+          <div>
+            <span className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">
+              Remedial Practice Problem
+            </span>
+            <span className="text-xs text-zinc-600 dark:text-zinc-400">
+              Select problem to model with Base-10 manipulatives:
+            </span>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {FIXED_ASSESSMENT_ITEMS.map((item) => {
+              const isSelected = targetQuestionId === item.id;
+              const isErr = studentErrors.includes(item.id);
+
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => handleSelectQuestion(item.id)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+                    isSelected
+                      ? 'bg-indigo-600 text-white shadow-xs'
+                      : isErr
+                      ? 'bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800 hover:bg-rose-100'
+                      : 'bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50'
+                  }`}
+                >
+                  <span>Item #{item.order} ({item.prompt})</span>
+                  {isErr && (
+                    <span className="text-rose-600 dark:text-rose-400 font-extrabold text-[10px] uppercase">
+                      Slip
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Interactive CPA Manipulative Simulation & Step Walkthrough */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Left: Interactive Base-10 Manipulative Board */}
@@ -147,15 +233,24 @@ function InterveneContent() {
             <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800/80 pb-3.5">
               <div>
                 <h3 className="font-black text-base text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
-                  <span>🧱</span> Interactive Place Value Board (83 − 47)
+                  <span>🧱</span> Interactive Place Value Board ({num1} − {num2})
                 </h3>
                 <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                  Simulate physical exchange: unbundle 1 ten into 10 ones before subtracting.
+                  Simulate physical exchange: unbundle 1 ten rod into 10 unit cubes before subtracting.
                 </p>
               </div>
-              <span className="text-xs font-mono font-black px-3 py-1 rounded-xl bg-indigo-50 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/60 shadow-2xs">
-                83 − 47
-              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleResetManipulatives}
+                  className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-bold cursor-pointer"
+                >
+                  Reset
+                </button>
+                <span className="text-xs font-mono font-black px-3 py-1 rounded-xl bg-indigo-50 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/60 shadow-2xs">
+                  {num1} − {num2}
+                </span>
+              </div>
             </div>
 
             {/* Place Value Mat (Tens | Ones) */}
@@ -220,16 +315,51 @@ function InterveneContent() {
                 ) : (
                   <>
                     <span>✓</span>
-                    <span>Exchanged! Now 7 Tens and 13 Ones. Decrement tens recorded!</span>
+                    <span>Exchanged! Now {tens1 - 1} Tens and {ones1 + 10} Ones. Decrement tens recorded!</span>
                   </>
                 )}
               </button>
 
               {hasRegrouped && (
                 <p className="text-xs text-center text-emerald-700 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/40 py-2 px-3 rounded-xl border border-emerald-200/80 dark:border-emerald-800/80">
-                  Result: 13 − 7 = 6 ones, and 7 − 4 = 3 tens → <strong>Difference = 36</strong>!
+                  Result: {ones1 + 10} − {ones2} = {expectedOnes} ones, and {tens1 - 1} − {tens2} = {expectedTens} tens → <strong>Difference = {correctAnswer}</strong>!
                 </p>
               )}
+            </div>
+
+            {/* Synchronized Concrete -> Abstract Scratchpad */}
+            <div className="border border-indigo-200 dark:border-indigo-900 bg-indigo-50/50 dark:bg-indigo-950/30 rounded-xl p-4 flex flex-col items-center justify-center font-mono text-center">
+              <span className="text-[10px] uppercase font-sans font-bold text-zinc-500 mb-2">
+                Synchronized Abstract Written Notation (CPA Bridge)
+              </span>
+              <div className="text-2xl font-bold tracking-widest text-zinc-900 dark:text-zinc-100">
+                <div className="flex justify-center gap-4 text-xs font-semibold pb-1">
+                  <span className={hasRegrouped ? 'text-rose-600 font-bold animate-pulse' : 'text-transparent'}>
+                    {tens1 - 1}
+                  </span>
+                  <span className={hasRegrouped ? 'text-emerald-600 font-bold animate-pulse' : 'text-transparent'}>
+                    {ones1 + 10}
+                  </span>
+                </div>
+                <div className="flex justify-center gap-4">
+                  <span className={hasRegrouped ? 'line-through text-zinc-400 decoration-rose-500 decoration-2' : ''}>
+                    {tens1}
+                  </span>
+                  <span className={hasRegrouped ? 'line-through text-zinc-400 decoration-emerald-500 decoration-2' : ''}>
+                    {ones1}
+                  </span>
+                </div>
+                <div className="flex justify-center gap-4 text-zinc-500">
+                  <span>−</span>
+                  <span>{tens2}</span>
+                  <span>{ones2}</span>
+                </div>
+                <div className="w-28 h-0.5 bg-zinc-800 dark:bg-zinc-200 mx-auto my-1.5" />
+                <div className="flex justify-center gap-4 text-emerald-600 dark:text-emerald-400 font-extrabold">
+                  <span>{expectedTens}</span>
+                  <span>{expectedOnes}</span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -258,19 +388,34 @@ function InterveneContent() {
                           : 'border-zinc-200/80 dark:border-zinc-800/80 hover:border-zinc-300 dark:hover:border-zinc-700 bg-white/50 dark:bg-zinc-800/30'
                       }`}
                     >
-                      <div className="flex items-center gap-2.5">
-                        <span
-                          className={`w-6 h-6 rounded-lg text-xs font-black flex items-center justify-center ${
-                            isActive
-                              ? 'bg-indigo-600 text-white shadow-2xs'
-                              : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400'
-                          }`}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2.5">
+                          <span
+                            className={`w-6 h-6 rounded-lg text-xs font-black flex items-center justify-center ${
+                              isActive
+                                ? 'bg-indigo-600 text-white shadow-2xs'
+                                : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400'
+                            }`}
+                          >
+                            {step.stepNumber}
+                          </span>
+                          <h4 className="text-sm font-black text-zinc-900 dark:text-zinc-50">
+                            {step.title}
+                          </h4>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            speakText(step.teacherPrompt, 'en');
+                          }}
+                          title="Listen with Web Speech"
+                          className="px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-indigo-100 dark:hover:bg-indigo-950 text-indigo-700 dark:text-indigo-300 text-xs font-extrabold flex items-center gap-1 transition-colors cursor-pointer border border-zinc-200 dark:border-zinc-700"
                         >
-                          {step.stepNumber}
-                        </span>
-                        <h4 className="text-sm font-black text-zinc-900 dark:text-zinc-50">
-                          {step.title}
-                        </h4>
+                          <span>🔊</span>
+                          <span>Audio</span>
+                        </button>
                       </div>
 
                       <p className="text-xs text-zinc-600 dark:text-zinc-300 mt-2 pl-8 leading-relaxed font-normal">
@@ -296,7 +441,7 @@ function InterveneContent() {
               <button
                 onClick={handleCompleteIntervention}
                 disabled={isCompleted}
-                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-black text-xs sm:text-sm shadow-md shadow-indigo-600/25 transition-all flex items-center justify-center gap-2 hover:scale-[1.01]"
+                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-black text-xs sm:text-sm shadow-md shadow-indigo-600/25 transition-all flex items-center justify-center gap-2 hover:scale-[1.01] cursor-pointer"
               >
                 {isCompleted ? (
                   <span>Recording Intervention Completion...</span>
@@ -322,4 +467,3 @@ export default function IntervenePage() {
     </Suspense>
   );
 }
-
