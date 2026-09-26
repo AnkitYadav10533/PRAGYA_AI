@@ -22,6 +22,24 @@ export type SubtractionErrorType =
   | 'calculation_error'              // Single-digit fact recall slip
   | 'unattempted';                   // No response recorded
 
+// Error Signature Codes for categorical taxonomy
+export type ErrorSignatureCode =
+  | 'REGROUPING_ERROR'              // Consistent with borrow without tens decrement
+  | 'PLACE_VALUE_ERROR'             // Subtracted smaller ones from larger ones
+  | 'SUBTRACTION_FACT_ERROR'        // Basic fact arithmetic calculation error
+  | 'NO_CLEAR_PATTERN'              // Multiple mixed or inconsistent errors
+  | 'OCR_UNCERTAIN'                 // Ambiguous or illegible extraction
+  | 'NO_ERROR';                     // Accurate mathematical solution
+
+export interface ErrorSignature {
+  code: ErrorSignatureCode;
+  type: SubtractionErrorType;
+  description: string;
+  explanation: string;
+  mathematicalRationale: string;
+  questionId: string;
+}
+
 // ==========================================
 // 2. Student & Class Models
 // ==========================================
@@ -54,6 +72,7 @@ export interface ClassRoom {
   academicYear: string;
   totalStudents: number;
 }
+export type Classroom = ClassRoom;
 
 // ==========================================
 // 3. Assessment & Item Bank Models
@@ -65,11 +84,16 @@ export type QuestionType = 'warmup' | 'diagnostic';
 export interface AssessmentItem {
   id: string;
   order: number;                    // 1 through 5
+  questionNumber?: number;          // 1 through 5 (alias for order)
   prompt: string;                   // e.g. "83 − 47"
   num1: number;                     // Minuend (e.g. 83)
+  operandA?: number;                // Minuend (alias for num1)
   num2: number;                     // Subtrahend (e.g. 47)
+  operandB?: number;                // Subtrahend (alias for num2)
   correctAnswer: number;            // Expected difference (e.g. 36)
   requiresRegrouping: boolean;
+  operation?: string;               // e.g. "subtraction"
+  diagnosticTags?: string[];        // e.g. ["regrouping", "place_value"]
   type: QuestionType;               // Q1 = warmup; Q2-Q5 = diagnostic
   targetSkill: string;              // e.g. "2-digit subtraction with regrouping"
   description: string;
@@ -84,6 +108,7 @@ export interface StudentResponse {
   timeSpentSeconds?: number;
   recordedAt: string;
 }
+export type Response = StudentResponse;
 
 export interface AssessmentSubmission {
   id: string;
@@ -97,7 +122,39 @@ export interface AssessmentSubmission {
 }
 
 // ==========================================
-// 4. Diagnostic Checks & Rules
+// 4. OCR & Normalization Models
+// ==========================================
+
+export type OCRConfidenceLevel = 'high' | 'medium' | 'low' | 'unreadable';
+
+export interface OCRResult {
+  questionId: string;
+  rawText: string;
+  normalizedAnswer: number | null;
+  confidence: number;               // 0.0 to 1.0
+  confidenceLevel: OCRConfidenceLevel;
+  isAmbiguous: boolean;
+  notes?: string;
+}
+
+export interface NormalizedResponse {
+  questionId: string;
+  rawInput: string;
+  numericValue: number | null;
+  isValidNumber: boolean;
+  isUncertain: boolean;
+}
+
+export interface MathematicalValidationResult {
+  questionId: string;
+  expectedAnswer: number;
+  observedAnswer: number | null;
+  correct: boolean;
+  difference?: number;
+}
+
+// ==========================================
+// 5. Diagnostic Checks & Rules
 // Section 12: 2 verdict-bearing checks + 1 warm-up
 // ==========================================
 
@@ -108,13 +165,14 @@ export interface DiagnosticCheck {
   checkNumber: 1 | 2 | 3;
   title: string;
   type: CheckType;
+  verdictBearing?: boolean;         // Convenience flag (true for verdict_bearing)
   passed: boolean;                  // true if student mastered this check; false if gap detected
   evidence: string;                 // Concrete textual evidence from responses
   indicator: string;                // Specific mathematical pattern observed
 }
 
 // ==========================================
-// 5. Teacher Verification & Decision
+// 6. Teacher Verification & Decision
 // Section 13: Accept | Reject | Change
 // ==========================================
 
@@ -142,7 +200,7 @@ export interface Diagnosis {
 }
 
 // ==========================================
-// 6. Remedial Activities & Grouping
+// 7. Remedial Activities & Grouping
 // ==========================================
 
 export interface ActivityStep {
@@ -161,7 +219,10 @@ export interface RemedialActivity {
   pedagogy: string;                 // Concrete -> Representational -> Abstract (CPA)
   steps: ActivityStep[];
   durationMinutes: number;
+  objective?: string;
+  instructions?: string[];
 }
+export type Activity = RemedialActivity;
 
 export type GroupStatus = 'formed' | 'in_intervention' | 'ready_for_reassessment' | 'completed';
 
@@ -178,7 +239,7 @@ export interface RemedialGroup {
 }
 
 // ==========================================
-// 7. Reassessment & Progress Comparison
+// 8. Reassessment & Progress Comparison
 // Section 14 & 15: Counts first, calculate percentages
 // ==========================================
 
@@ -195,9 +256,22 @@ export interface ReassessmentRecord {
   isMastered: boolean;
   completedAt: string;
 }
+export type Reassessment = ReassessmentRecord;
+
+export interface Progress {
+  studentId: string;
+  beforeCorrect: number;
+  beforeTotal: number;
+  beforePercentage: number;
+  afterCorrect: number;
+  afterTotal: number;
+  afterPercentage: number;
+  improvement: number;              // Calculated afterPercentage - beforePercentage
+  isMastered: boolean;
+}
 
 // ==========================================
-// 8. Class-Level Gap Analysis (Aggregates)
+// 9. Class-Level Gap Analysis (Aggregates)
 // ==========================================
 
 export interface ClassGapSummary {
@@ -209,3 +283,4 @@ export interface ClassGapSummary {
   errorDistribution: Record<SubtractionErrorType, number>;
   completionRate: number;           // Calculated: assessedCount / totalStudents
 }
+
