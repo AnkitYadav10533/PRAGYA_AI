@@ -309,3 +309,20 @@ export interface ClassGapSummary {
   completionRate: number;           // Calculated: assessedCount / totalStudents
 }
 
+// ==========================================
+// 10. Mathematics OCR Module Exports
+// ==========================================
+
+export type {
+  MathOCRResult,
+  MathOCRStatus,
+  MathOCRErrorType,
+  SupportedOperation,
+  MathItemDefinition,
+  ParsedMathExpression,
+  PreprocessedImage,
+  RawOCROutput,
+  MathOCRProvider,
+} from './ocr/types';
+
+
