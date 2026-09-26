@@ -22,6 +22,15 @@ export function AssessmentQuestion({
   const tens2 = Math.floor(item.num2 / 10);
   const ones2 = item.num2 % 10;
 
+  const operationSymbol =
+    item.operation === 'addition'
+      ? '+'
+      : item.operation === 'multiplication'
+      ? '×'
+      : item.operation === 'division'
+      ? '÷'
+      : '−';
+
   return (
     <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-xs hover:border-zinc-300 dark:hover:border-zinc-700 transition-all flex flex-col justify-between">
       {/* Question Header */}
@@ -45,24 +54,31 @@ export function AssessmentQuestion({
         )}
       </div>
 
-      {/* Vertical Math Alignment */}
-      <div className="py-6 flex flex-col items-center justify-center font-mono">
-        <div className="grid grid-cols-3 text-2xl sm:text-3xl font-bold tracking-widest text-zinc-900 dark:text-zinc-100 gap-x-2 w-32">
-          {/* Column labels */}
-          <div className="text-[10px] uppercase font-sans text-zinc-400 text-center"></div>
-          <div className="text-[10px] uppercase font-sans text-zinc-400 text-center font-semibold">T</div>
-          <div className="text-[10px] uppercase font-sans text-zinc-400 text-center font-semibold">O</div>
+      {/* Math Alignment Display */}
+      <div className="py-4 flex flex-col items-center justify-center font-mono">
+        {/* Horizontal or Vertical calculation */}
+        {item.num1 >= 10 && item.num2 >= 10 && (item.operation === 'subtraction' || item.operation === 'addition' || !item.operation) ? (
+          <div className="grid grid-cols-3 text-2xl sm:text-3xl font-bold tracking-widest text-zinc-900 dark:text-zinc-100 gap-x-2 w-32">
+            {/* Column labels */}
+            <div className="text-[10px] uppercase font-sans text-zinc-400 text-center"></div>
+            <div className="text-[10px] uppercase font-sans text-zinc-400 text-center font-semibold">T</div>
+            <div className="text-[10px] uppercase font-sans text-zinc-400 text-center font-semibold">O</div>
 
-          {/* Row 1 (Minuend) */}
-          <div></div>
-          <div className="text-center">{tens1}</div>
-          <div className="text-center">{ones1}</div>
+            {/* Row 1 */}
+            <div></div>
+            <div className="text-center">{tens1}</div>
+            <div className="text-center">{ones1}</div>
 
-          {/* Row 2 (Subtrahend) */}
-          <div className="text-zinc-500 text-center">−</div>
-          <div className="text-center">{tens2}</div>
-          <div className="text-center">{ones2}</div>
-        </div>
+            {/* Row 2 */}
+            <div className="text-zinc-500 text-center">{operationSymbol}</div>
+            <div className="text-center">{tens2}</div>
+            <div className="text-center">{ones2}</div>
+          </div>
+        ) : (
+          <div className="text-3xl font-bold tracking-wider text-zinc-900 dark:text-zinc-100 my-2">
+            {item.prompt}
+          </div>
+        )}
 
         {/* Divider bar */}
         <div className="w-36 h-0.5 bg-zinc-800 dark:bg-zinc-200 my-2" />
@@ -73,7 +89,7 @@ export function AssessmentQuestion({
             type="text"
             inputMode="numeric"
             pattern="[0-9]*"
-            maxLength={3}
+            maxLength={4}
             value={studentAnswer}
             onChange={(e) => {
               const val = e.target.value.replace(/[^0-9]/g, '');
@@ -89,6 +105,43 @@ export function AssessmentQuestion({
           />
         </div>
       </div>
+
+      {/* Multiple Choice Options (MCQ) when available */}
+      {item.options && item.options.length > 0 && (
+        <div className="mt-2 pt-3 border-t border-zinc-100 dark:border-zinc-800/80 space-y-1.5">
+          <span className="text-[10px] uppercase font-bold tracking-wider text-zinc-400 block text-center">
+            MCQ Options (Gemini 3.5 Flash Lite)
+          </span>
+          <div className="grid grid-cols-2 gap-2">
+            {item.options.map((opt) => {
+              const isSelected = studentAnswer === opt.value.toString() || studentAnswer === opt.text;
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => onAnswerChange(opt.value.toString())}
+                  className={cn(
+                    'px-2 py-1.5 rounded-lg text-xs font-mono font-bold border transition-all flex items-center justify-between',
+                    isSelected
+                      ? 'border-indigo-600 bg-indigo-600 text-white shadow-xs scale-[1.02]'
+                      : 'border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/60 text-zinc-800 dark:text-zinc-200 hover:border-indigo-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'text-[10px] font-sans px-1.5 py-0.5 rounded font-bold',
+                      isSelected ? 'bg-white/20 text-white' : 'bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300'
+                    )}
+                  >
+                    {opt.id}
+                  </span>
+                  <span className="text-sm font-extrabold">{opt.text}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
