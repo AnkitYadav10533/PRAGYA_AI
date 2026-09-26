@@ -99,65 +99,89 @@ export default function ClassPage() {
       </div>
 
       {/* Classroom Status Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 shadow-xs">
-          <p className="text-xs text-zinc-500 font-medium">Total Students</p>
-          <p className="text-2xl font-extrabold text-zinc-900 dark:text-zinc-100 mt-1">{students.length}</p>
-          <p className="text-[11px] text-zinc-400 mt-1">Class 3-A FLN cohort</p>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="glass-card rounded-2xl p-5 shadow-xs transition-all duration-200 hover:-translate-y-0.5">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">Total Students</p>
+            <span className="p-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 text-xs">👥</span>
+          </div>
+          <p className="text-3xl font-black text-zinc-900 dark:text-zinc-50 mt-2">{students.length}</p>
+          <div className="flex items-center gap-1.5 mt-2">
+            <span className="w-2 h-2 rounded-full bg-indigo-500" />
+            <p className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400">Class 3-A FLN cohort</p>
+          </div>
         </div>
 
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 shadow-xs">
-          <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
-            <span>✓</span> Verified & Closed
-          </p>
-          <p className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">{verifiedCount}</p>
-          <p className="text-[11px] text-zinc-400 mt-1">Teacher approved diagnosis</p>
+        <div className="glass-card rounded-2xl p-5 shadow-xs transition-all duration-200 hover:-translate-y-0.5">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+              <span>✓</span> Verified & Closed
+            </p>
+            <span className="p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 text-xs">🎓</span>
+          </div>
+          <p className="text-3xl font-black text-emerald-600 dark:text-emerald-400 mt-2">{verifiedCount}</p>
+          <div className="flex items-center gap-1.5 mt-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            <p className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400">Teacher approved diagnosis</p>
+          </div>
         </div>
 
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 shadow-xs">
-          <p className="text-xs text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1">
-            <span>⚠</span> Needs Review
-          </p>
-          <p className="text-2xl font-extrabold text-amber-600 dark:text-amber-400 mt-1">{needsReviewCount}</p>
-          <p className="text-[11px] text-zinc-400 mt-1">Awaiting teacher decision</p>
+        <div className="glass-card rounded-2xl p-5 shadow-xs transition-all duration-200 hover:-translate-y-0.5">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1">
+              <span>⚠</span> Needs Review
+            </p>
+            <span className="p-1.5 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 text-xs">⏳</span>
+          </div>
+          <p className="text-3xl font-black text-amber-600 dark:text-amber-400 mt-2">{needsReviewCount}</p>
+          <div className="flex items-center gap-1.5 mt-2">
+            <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+            <p className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400">Awaiting teacher decision</p>
+          </div>
         </div>
 
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 shadow-xs">
-          <p className="text-xs text-zinc-500 font-medium flex items-center gap-1">
-            <span>○</span> Not Assessed
-          </p>
-          <p className="text-2xl font-extrabold text-zinc-700 dark:text-zinc-300 mt-1">{notAssessedCount}</p>
-          <p className="text-[11px] text-zinc-400 mt-1">Pending submission</p>
+        <div className="glass-card rounded-2xl p-5 shadow-xs transition-all duration-200 hover:-translate-y-0.5">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
+              <span>○</span> Not Assessed
+            </p>
+            <span className="p-1.5 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-500 text-xs">📝</span>
+          </div>
+          <p className="text-3xl font-black text-zinc-700 dark:text-zinc-300 mt-2">{notAssessedCount}</p>
+          <div className="flex items-center gap-1.5 mt-2">
+            <span className="w-2 h-2 rounded-full bg-zinc-400" />
+            <p className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400">Pending baseline assessment</p>
+          </div>
         </div>
       </div>
 
       {/* Featured Golden Demo Card */}
-      <div className="bg-gradient-to-br from-indigo-50/80 via-white to-purple-50/60 dark:from-indigo-950/20 dark:via-zinc-900 dark:to-purple-950/20 border-2 border-indigo-200 dark:border-indigo-900/60 rounded-2xl p-6 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="space-y-1">
+      <div className="relative overflow-hidden bg-gradient-to-r from-indigo-50/90 via-white to-purple-50/70 dark:from-zinc-900/90 dark:via-zinc-900/80 dark:to-indigo-950/30 border border-indigo-200/80 dark:border-indigo-900/70 rounded-2xl p-6 shadow-sm backdrop-blur-md flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-indigo-600 text-white">
+            <span className="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-indigo-600 text-white shadow-2xs">
               Primary Demo Student
             </span>
-            <span className="text-xs text-indigo-700 dark:text-indigo-300 font-medium">Roll #1</span>
+            <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300">Roll #1</span>
           </div>
-          <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
+          <h2 className="text-xl sm:text-2xl font-black text-zinc-900 dark:text-zinc-50 tracking-tight">
             Aarav Patel — 2-Digit Subtraction with Regrouping
           </h2>
-          <p className="text-xs text-zinc-600 dark:text-zinc-400 max-w-2xl">
-            Baseline response demonstrating the regrouping slip: <strong>83 − 47 = 46</strong> (borrowed 10 into ones without decrementing tens digit).
+          <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-300 max-w-2xl leading-relaxed">
+            Baseline response demonstrating the canonical regrouping slip: <strong>83 − 47 = 46</strong> (borrowed 10 into ones without decrementing the tens digit).
           </p>
         </div>
 
-        <div className="flex items-center gap-2 w-full md:w-auto">
+        <div className="flex items-center gap-2.5 w-full md:w-auto shrink-0">
           <Link
             href="/assess?studentId=s-01"
-            className="flex-1 md:flex-initial px-4 py-2 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 hover:border-indigo-500 text-xs font-semibold text-zinc-800 dark:text-zinc-200 shadow-xs text-center transition-all"
+            className="flex-1 md:flex-initial px-4 py-2.5 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:border-indigo-500 text-xs font-bold text-zinc-800 dark:text-zinc-200 shadow-xs text-center transition-all hover:scale-[1.02]"
           >
             Review Assessment
           </Link>
           <Link
             href="/diagnose?studentId=s-01"
-            className="flex-1 md:flex-initial px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-xs text-center transition-all"
+            className="flex-1 md:flex-initial px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-md shadow-indigo-600/20 text-center transition-all hover:scale-[1.02]"
           >
             Verify Diagnosis →
           </Link>
@@ -166,19 +190,20 @@ export default function ClassPage() {
 
       {/* Roster Controls: Search & Filter */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
-        <div className="w-full sm:w-72">
+        <div className="relative w-full sm:w-80">
+          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 text-sm">🔍</span>
           <input
             type="text"
             placeholder="Search by student name or roll..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-3.5 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full pl-9 pr-3.5 py-2.5 text-xs sm:text-sm rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 bg-white/90 dark:bg-zinc-900/90 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-2xs backdrop-blur-md"
           />
         </div>
 
-        <div className="flex items-center gap-1.5 self-start sm:self-auto overflow-x-auto pb-1 max-w-full">
+        <div className="flex items-center gap-1.5 self-start sm:self-auto overflow-x-auto pb-1 max-w-full bg-zinc-100/70 dark:bg-zinc-900/70 p-1 rounded-xl border border-zinc-200/60 dark:border-zinc-800/60">
           {[
-            { key: 'all', label: 'All (30)' },
+            { key: 'all', label: `All (${students.length})` },
             { key: 'needs_review', label: `Needs Review (${needsReviewCount})` },
             { key: 'verified', label: `Verified (${verifiedCount})` },
             { key: 'not_assessed', label: `Not Assessed (${notAssessedCount})` },
@@ -186,10 +211,10 @@ export default function ClassPage() {
             <button
               key={tab.key}
               onClick={() => setFilterStatus(tab.key)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
                 filterStatus === tab.key
-                  ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 font-semibold'
-                  : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                  ? 'bg-white text-indigo-700 dark:bg-zinc-800 dark:text-indigo-300 shadow-xs'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
               }`}
             >
               {tab.label}
@@ -199,10 +224,10 @@ export default function ClassPage() {
       </div>
 
       {/* Students Table */}
-      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xs overflow-hidden">
+      <div className="glass-card rounded-2xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-zinc-50/80 dark:bg-zinc-800/50 border-b border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+            <thead className="bg-zinc-50/90 dark:bg-zinc-800/60 border-b border-zinc-200/80 dark:border-zinc-800/80 text-[11px] font-bold text-zinc-500 uppercase tracking-wider">
               <tr>
                 <th className="py-3.5 px-4 w-16 text-center">Roll</th>
                 <th className="py-3.5 px-4">Student Name</th>
@@ -211,22 +236,34 @@ export default function ClassPage() {
                 <th className="py-3.5 px-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+            <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/80">
               {filteredStudents.map((student) => {
                 const diag = getStudentDiagnosis(student.id);
+                const initials = student.name
+                  .split(' ')
+                  .map((n) => n[0])
+                  .join('');
+
                 return (
                   <tr
                     key={student.id}
-                    className="hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40 transition-colors"
+                    className="hover:bg-indigo-50/30 dark:hover:bg-indigo-950/20 transition-colors group"
                   >
-                    <td className="py-3.5 px-4 text-center font-mono font-medium text-zinc-500">
+                    <td className="py-3.5 px-4 text-center font-mono font-bold text-xs text-zinc-500">
                       #{student.rollNumber}
                     </td>
                     <td className="py-3.5 px-4">
-                      <div className="font-semibold text-zinc-900 dark:text-zinc-100">
-                        {student.name}
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-100 to-purple-100 dark:from-indigo-950 dark:to-purple-950 text-indigo-700 dark:text-indigo-300 font-bold text-xs flex items-center justify-center border border-indigo-200/50 dark:border-indigo-800/50 shadow-2xs">
+                          {initials}
+                        </div>
+                        <div>
+                          <div className="font-bold text-zinc-900 dark:text-zinc-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                            {student.name}
+                          </div>
+                          <div className="text-[11px] text-zinc-400">Class 3-A • {student.gender === 'M' ? 'Boy' : 'Girl'}</div>
+                        </div>
                       </div>
-                      <div className="text-xs text-zinc-400">Class 3-A • {student.gender === 'M' ? 'Boy' : 'Girl'}</div>
                     </td>
                     <td className="py-3.5 px-4">
                       <StatusBadge status={student.status} />
@@ -234,7 +271,7 @@ export default function ClassPage() {
                     <td className="py-3.5 px-4">
                       {diag ? (
                         <div className="space-y-0.5">
-                          <span className="font-medium text-xs text-zinc-800 dark:text-zinc-200">
+                          <span className="font-bold text-xs text-zinc-800 dark:text-zinc-200">
                             {diag.finalVerdict || diag.suggestedVerdict}
                           </span>
                           <p className="text-[11px] text-zinc-400 line-clamp-1">{diag.rootCause}</p>
@@ -246,13 +283,13 @@ export default function ClassPage() {
                     <td className="py-3.5 px-4 text-right space-x-2">
                       <Link
                         href={`/assess?studentId=${student.id}`}
-                        className="inline-block px-2.5 py-1 text-xs rounded-lg border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 font-medium transition-colors"
+                        className="inline-block px-3 py-1.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 font-bold transition-all shadow-2xs"
                       >
                         Assess
                       </Link>
                       <Link
                         href={`/diagnose?studentId=${student.id}`}
-                        className="inline-block px-2.5 py-1 text-xs rounded-lg bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 font-semibold transition-colors"
+                        className="inline-block px-3 py-1.5 text-xs rounded-xl bg-indigo-50 text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 font-bold transition-all shadow-2xs"
                       >
                         Diagnose
                       </Link>
@@ -263,7 +300,7 @@ export default function ClassPage() {
 
               {filteredStudents.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="py-8 text-center text-zinc-500 text-sm">
+                  <td colSpan={5} className="py-12 text-center text-zinc-500 text-sm">
                     No students match the selected filter.
                   </td>
                 </tr>
@@ -275,3 +312,4 @@ export default function ClassPage() {
     </div>
   );
 }
+

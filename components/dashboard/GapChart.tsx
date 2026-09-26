@@ -59,33 +59,33 @@ export function GapChart({ summary }: GapChartProps) {
   ];
 
   return (
-    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xs space-y-6">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-zinc-100 dark:border-zinc-800 pb-4">
+    <div className="glass-card rounded-2xl p-6 sm:p-7 shadow-xs space-y-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-zinc-100 dark:border-zinc-800/80 pb-4">
         <div>
-          <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
+          <h3 className="text-lg font-black text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
             <span>📊</span> Visual Class Learning Gap Distribution
           </h3>
-          <p className="text-xs text-zinc-500 mt-0.5">
-            Strict standardized vocabulary: <strong className="text-zinc-700 dark:text-zinc-300">Regrouping</strong>, <strong className="text-zinc-700 dark:text-zinc-300">Place Value</strong>, and <strong className="text-zinc-700 dark:text-zinc-300">Subtraction Facts</strong>.
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+            Standardized NIPUN/FLN vocabulary: <strong className="text-zinc-700 dark:text-zinc-300">Regrouping</strong>, <strong className="text-zinc-700 dark:text-zinc-300">Place Value</strong>, and <strong className="text-zinc-700 dark:text-zinc-300">Subtraction Facts</strong>.
           </p>
         </div>
-        <span className="text-xs font-mono text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 rounded-lg">
+        <span className="text-xs font-mono font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 px-3 py-1.5 rounded-xl border border-indigo-200/60 dark:border-indigo-800/60 shadow-2xs">
           N = {total} Students
         </span>
       </div>
 
       {/* Cumulative Stacked Bar */}
-      <div className="space-y-1.5">
-        <div className="flex justify-between text-xs text-zinc-500 font-medium">
-          <span>Class Cohort Composition</span>
-          <span>100% Total</span>
+      <div className="space-y-2">
+        <div className="flex justify-between text-xs text-zinc-500 dark:text-zinc-400 font-semibold">
+          <span>Class Cohort Distribution</span>
+          <span>100% Total Representation</span>
         </div>
-        <div className="w-full h-4 rounded-full overflow-hidden flex bg-zinc-100 dark:bg-zinc-800">
+        <div className="w-full h-4 rounded-full overflow-hidden flex bg-zinc-100 dark:bg-zinc-800 p-0.5 shadow-inner">
           {gaps.map((g) => (
             <div
               key={g.title}
               title={`${g.title}: ${g.count} students (${g.percentage}%)`}
-              className={`${g.color} transition-all duration-500`}
+              className={`${g.color} transition-all duration-500 first:rounded-l-full last:rounded-r-full`}
               style={{ width: `${g.percentage}%` }}
             />
           ))}
@@ -93,30 +93,30 @@ export function GapChart({ summary }: GapChartProps) {
       </div>
 
       {/* Breakdown Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-1">
         {gaps.map((g) => (
           <div
             key={g.title}
-            className={`border rounded-xl p-4 ${g.bgColor} ${g.borderColor} flex flex-col justify-between space-y-3`}
+            className={`border rounded-2xl p-5 ${g.bgColor} ${g.borderColor} flex flex-col justify-between space-y-3 shadow-2xs transition-all duration-200 hover:-translate-y-0.5`}
           >
             <div>
               <div className="flex items-center justify-between">
-                <span className={`text-xs font-bold uppercase tracking-wider ${g.textColor}`}>
+                <span className={`text-[11px] font-black uppercase tracking-wider ${g.textColor}`}>
                   {g.title}
                 </span>
-                <span className="text-xs font-mono font-semibold text-zinc-600 dark:text-zinc-400">
+                <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-md bg-white/70 dark:bg-zinc-900/70 text-zinc-700 dark:text-zinc-300 shadow-2xs">
                   {g.percentage}%
                 </span>
               </div>
-              <div className="mt-1 flex items-baseline gap-1.5">
-                <span className="text-2xl font-extrabold text-zinc-900 dark:text-zinc-50">
+              <div className="mt-2 flex items-baseline gap-1.5">
+                <span className="text-3xl font-black text-zinc-900 dark:text-zinc-50">
                   {g.count}
                 </span>
-                <span className="text-xs text-zinc-500">Students</span>
+                <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">Students</span>
               </div>
             </div>
 
-            <p className="text-[11px] text-zinc-600 dark:text-zinc-400 leading-relaxed border-t border-zinc-200/50 dark:border-zinc-700/50 pt-2">
+            <p className="text-[11px] text-zinc-600 dark:text-zinc-300 leading-relaxed border-t border-zinc-200/50 dark:border-zinc-700/50 pt-2.5 font-normal">
               {g.desc}
             </p>
           </div>
@@ -125,3 +125,4 @@ export function GapChart({ summary }: GapChartProps) {
     </div>
   );
 }
+

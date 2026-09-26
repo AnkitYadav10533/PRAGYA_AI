@@ -165,134 +165,189 @@ function ReassessContent() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 w-full space-y-6 flex-1">
         {/* Header & Student Selector */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs font-semibold uppercase tracking-wider text-purple-600 dark:text-purple-400">
-                🟪 Abhinav — Action Layer
-              </span>
-              <span className="text-xs text-zinc-400">•</span>
-              <span className="text-xs text-zinc-500">Conveyor Belt Step 7 (Final Step)</span>
+        <div className="glass-card p-6 sm:p-7 relative overflow-hidden backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-xl shadow-indigo-500/5">
+          <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-bl from-emerald-500/10 via-teal-500/5 to-transparent rounded-full blur-2xl pointer-events-none" />
+          
+          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+            <div>
+              <div className="flex flex-wrap items-center gap-2 mb-2">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-purple-100 text-purple-800 dark:bg-purple-950/80 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+                  <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" />
+                  🟪 Abhinav — Action Layer
+                </span>
+                <span className="text-zinc-300 dark:text-zinc-700">•</span>
+                <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100/80 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                  Conveyor Belt Step 7 of 7 · Reassess & Measure
+                </span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-zinc-50 tracking-tight">
+                Reassessment & Progress Measurement
+              </h1>
+              <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1 max-w-2xl">
+                Section 14 & 15 Compliance: Actual raw counts displayed; zero hardcoded or fake percentages. Follow-up measurement verifying persistent tens-decrement mastery.
+              </p>
             </div>
-            <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-zinc-50">
-              Reassessment & Progress Measurement
-            </h1>
-            <p className="text-xs text-zinc-500">
-              Section 14 & 15 Compliance: Actual raw counts displayed; zero hardcoded or fake percentages.
-            </p>
-          </div>
 
-          <StudentSelector
-            students={students}
-            currentStudentId={selectedStudent.id}
-            targetRoute="/reassess"
-          />
+            <div className="flex items-center gap-3 shrink-0">
+              <StudentSelector
+                students={students}
+                currentStudentId={selectedStudent.id}
+                targetRoute="/reassess"
+              />
+            </div>
+          </div>
         </div>
 
         {/* Before vs After Progress Comparison Card */}
         {progress && (
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 sm:p-8 shadow-xs space-y-6">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-zinc-100 dark:border-zinc-800 pb-4">
+          <div className="glass-card p-6 sm:p-8 relative overflow-hidden backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-xl shadow-emerald-500/5 space-y-6">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-emerald-500/10 via-indigo-500/10 to-transparent rounded-full blur-3xl pointer-events-none" />
+
+            {/* Title & Badge Row */}
+            <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-zinc-100 dark:border-zinc-800 pb-5">
               <div>
-                <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
-                  FLN Growth Metric
+                <span className="text-[11px] font-bold tracking-wider text-emerald-600 dark:text-emerald-400 uppercase">
+                  Verified FLN Growth Metric
                 </span>
-                <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mt-0.5">
+                <h3 className="text-xl sm:text-2xl font-black text-zinc-900 dark:text-zinc-50 mt-0.5">
                   Performance Growth for {selectedStudent.name}
                 </h3>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 {isSaved && (
-                  <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800">
-                    ✓ Autosaved
+                  <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 inline-flex items-center gap-1.5 shadow-xs">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    Autosaved
                   </span>
                 )}
-                <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                <span className={`px-3 py-1 rounded-full text-xs font-extrabold shadow-xs border ${
+                  progress.isMastered
+                    ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-emerald-400'
+                    : 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700'
+                }`}>
                   {progress.isMastered ? '✓ Mastered Regrouping' : 'In Progress'}
                 </span>
-                <span className="px-3 py-1 rounded-full text-xs font-bold bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300">
+                <span className="px-3.5 py-1 rounded-full text-xs font-black bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-xs">
                   +{progress.improvement}% Improvement
                 </span>
               </div>
             </div>
 
             {/* Counts Comparison Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Baseline Card */}
-              <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 bg-zinc-50/50 dark:bg-zinc-800/30 space-y-2">
-                <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-                  1. Baseline Assessment
-                </span>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-extrabold text-zinc-700 dark:text-zinc-300">
-                    {progress.beforeCorrect} / {progress.beforeTotal}
-                  </span>
-                  <span className="text-sm font-semibold text-zinc-500 font-mono">
-                    ({progress.beforePercentage}%)
-                  </span>
+              <div className="rounded-2xl p-5 bg-gradient-to-b from-zinc-50 to-zinc-100/50 dark:from-zinc-800/40 dark:to-zinc-800/20 border border-zinc-200 dark:border-zinc-800/80 shadow-xs flex flex-col justify-between space-y-4">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider">
+                      1. Baseline Assessment
+                    </span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300">
+                      Step 1
+                    </span>
+                  </div>
+                  <div className="mt-3 flex items-baseline gap-2.5">
+                    <span className="text-4xl font-black text-zinc-800 dark:text-zinc-200 tracking-tight font-mono">
+                      {progress.beforeCorrect} / {progress.beforeTotal}
+                    </span>
+                    <span className="text-sm font-bold text-zinc-500 font-mono">
+                      ({progress.beforePercentage}%)
+                    </span>
+                  </div>
                 </div>
-                <p className="text-xs text-zinc-500">
-                  Pre-intervention score with identified regrouping slips (answered 46 on 83−47).
-                </p>
+                <div className="pt-3 border-t border-zinc-200/60 dark:border-zinc-700/60">
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                    Pre-intervention score with identified regrouping slips (e.g. answered <span className="font-mono font-bold text-rose-500">46</span> instead of <span className="font-mono font-bold text-emerald-600">36</span> on 83−47).
+                  </p>
+                </div>
               </div>
 
               {/* Arrow / Intervention Intermediary */}
-              <div className="border border-indigo-200 dark:border-indigo-900/60 rounded-xl p-5 bg-indigo-50/40 dark:bg-indigo-950/20 flex flex-col justify-between space-y-2">
+              <div className="rounded-2xl p-5 bg-gradient-to-b from-indigo-50/60 to-purple-50/30 dark:from-indigo-950/30 dark:to-purple-950/10 border border-indigo-200 dark:border-indigo-900/60 shadow-xs flex flex-col justify-between space-y-4">
                 <div>
-                  <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300 uppercase tracking-wider">
-                    2. Targeted CPA Intervention
-                  </span>
-                  <h4 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 mt-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-indigo-700 dark:text-indigo-300 uppercase tracking-wider">
+                      2. Targeted CPA Intervention
+                    </span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300">
+                      Step 6
+                    </span>
+                  </div>
+                  <h4 className="text-base font-extrabold text-zinc-900 dark:text-zinc-100 mt-2">
                     Borrow & Build Activity
                   </h4>
-                  <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
-                    Exchanged 1 tens rod for 10 ones cubes, reinforced explicit tens decrementing before subtraction.
+                  <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1 leading-relaxed">
+                    Exchanged 1 tens rod for 10 ones cubes (<span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">8T 3O → 7T 13O</span>), reinforcing tens decrementing.
                   </p>
                 </div>
-                <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
-                  ✓ Activity Completed
-                </span>
+                <div className="pt-3 border-t border-indigo-100 dark:border-indigo-900/40 flex items-center justify-between">
+                  <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                    CPA Cycle Completed
+                  </span>
+                  <Link
+                    href={`/intervene?studentId=${selectedStudent.id}`}
+                    className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
+                  >
+                    View Board →
+                  </Link>
+                </div>
               </div>
 
               {/* Reassessment Card */}
-              <div className="border border-emerald-300 dark:border-emerald-800 rounded-xl p-5 bg-emerald-50/40 dark:bg-emerald-950/20 space-y-2">
-                <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 uppercase tracking-wider">
-                  3. Reassessment Post-Intervention
-                </span>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">
-                    {progress.afterCorrect} / {progress.afterTotal}
-                  </span>
-                  <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 font-mono">
-                    ({progress.afterPercentage}%)
-                  </span>
+              <div className="rounded-2xl p-5 bg-gradient-to-b from-emerald-50/70 to-teal-50/30 dark:from-emerald-950/40 dark:to-teal-950/10 border-2 border-emerald-300 dark:border-emerald-700/80 shadow-md shadow-emerald-500/5 flex flex-col justify-between space-y-4">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 uppercase tracking-wider">
+                      3. Reassessment Post-Intervention
+                    </span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-200 dark:bg-emerald-800 text-emerald-800 dark:text-emerald-200">
+                      Step 7
+                    </span>
+                  </div>
+                  <div className="mt-3 flex items-baseline gap-2.5">
+                    <span className="text-4xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight font-mono">
+                      {progress.afterCorrect} / {progress.afterTotal}
+                    </span>
+                    <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400 font-mono">
+                      ({progress.afterPercentage}%)
+                    </span>
+                  </div>
                 </div>
-                <p className="text-xs text-emerald-800 dark:text-emerald-300 font-medium">
-                  Net Improvement: <strong>+{progress.improvement}%</strong> calculated directly from raw counts.
-                </p>
+                <div className="pt-3 border-t border-emerald-200 dark:border-emerald-800/80">
+                  <p className="text-xs text-emerald-900 dark:text-emerald-200 font-medium leading-relaxed">
+                    Net Improvement: <strong className="text-emerald-700 dark:text-emerald-300 font-bold">+{progress.improvement}%</strong> calculated directly from raw counts with zero estimated extrapolation.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
         )}
 
         {/* 5 Reassessment Questions Grid */}
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xs space-y-6">
+        <div className="glass-card p-6 sm:p-7 relative overflow-hidden backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-xl shadow-indigo-500/5 space-y-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-zinc-100 dark:border-zinc-800 pb-4">
             <div>
-              <h3 className="font-bold text-base text-zinc-900 dark:text-zinc-100">
-                Follow-up Measurement (Same-Skill Subtraction Items)
-              </h3>
-              <p className="text-xs text-zinc-500">
-                Verify that {selectedStudent.name} correctly decrements the tens column across parallel problems.
+              <div className="flex items-center gap-2">
+                <span className="text-lg font-black text-zinc-900 dark:text-zinc-50">
+                  Follow-up Measurement Items
+                </span>
+                <span className="text-xs px-2 py-0.5 rounded-full font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                  Same-Skill FLN Bank
+                </span>
+              </div>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                Verify that {selectedStudent.name} correctly decrements the tens column across parallel 2-digit subtraction problems.
               </p>
             </div>
 
             <button
               onClick={handleFillAllCorrect}
-              className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition-all"
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold shadow-md shadow-emerald-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2 cursor-pointer"
             >
-              Fill 100% Mastery (5/5 Correct)
+              <span>⭐</span>
+              <span>Fill 100% Mastery (5/5 Correct)</span>
             </button>
           </div>
 
@@ -304,32 +359,49 @@ function ReassessContent() {
               return (
                 <div
                   key={q.id}
-                  className={`border rounded-xl p-4 text-center space-y-3 transition-all ${
+                  className={`rounded-2xl p-4 text-center space-y-3 transition-all border ${
                     isCorrect
-                      ? 'border-emerald-300 bg-emerald-50/40 dark:bg-emerald-950/20'
-                      : 'border-zinc-200 dark:border-zinc-800'
+                      ? 'border-emerald-300 dark:border-emerald-700/80 bg-gradient-to-b from-emerald-50/50 to-emerald-100/20 dark:from-emerald-950/30 dark:to-emerald-950/10 shadow-sm'
+                      : 'border-zinc-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-800/40 hover:border-zinc-300 dark:hover:border-zinc-700'
                   }`}
                 >
-                  <div className="flex items-center justify-between text-xs text-zinc-400">
-                    <span>Item #{idx + 1}</span>
-                    <span>{isCorrect ? '✓' : ''}</span>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-zinc-400">Item #{idx + 1}</span>
+                    {isCorrect ? (
+                      <span className="w-5 h-5 rounded-full bg-emerald-500 text-white font-bold text-xs inline-flex items-center justify-center">
+                        ✓
+                      </span>
+                    ) : (
+                      <span className="w-5 h-5 rounded-full bg-zinc-200 dark:bg-zinc-700 text-zinc-400 text-xs inline-flex items-center justify-center font-mono">
+                        ?
+                      </span>
+                    )}
                   </div>
 
-                  <div className="font-mono text-xl font-bold text-zinc-900 dark:text-zinc-100">
-                    {q.prompt}
+                  {/* Math Problem Card */}
+                  <div className="bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-xl py-2.5 px-3">
+                    <div className="font-mono text-xl font-black text-zinc-900 dark:text-zinc-100 tracking-tight">
+                      {q.prompt}
+                    </div>
                   </div>
 
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    value={val}
-                    onChange={(e) => handleAnswerChange(q.id, e.target.value)}
-                    placeholder="?"
-                    className="w-20 text-center text-lg font-bold font-mono py-1 rounded-lg border-2 border-zinc-300 dark:border-zinc-700 focus:border-indigo-600 focus:outline-none bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 mx-auto block"
-                  />
+                  <div className="pt-1">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={val}
+                      onChange={(e) => handleAnswerChange(q.id, e.target.value)}
+                      placeholder="?"
+                      className={`w-24 text-center text-xl font-black font-mono py-1.5 rounded-xl border-2 focus:outline-none bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-50 mx-auto block shadow-inner transition-all ${
+                        isCorrect
+                          ? 'border-emerald-500 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20'
+                          : 'border-zinc-300 dark:border-zinc-700 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-500/20'
+                      }`}
+                    />
+                  </div>
 
                   <p className="text-[11px] text-zinc-400">
-                    Expected: <strong className="font-mono">{q.correctAnswer}</strong>
+                    Correct: <strong className="font-mono font-bold text-zinc-700 dark:text-zinc-300">{q.correctAnswer}</strong>
                   </p>
                 </div>
               );
@@ -338,26 +410,30 @@ function ReassessContent() {
         </div>
 
         {/* Completion & Next Steps Footer */}
-        <div className="bg-gradient-to-r from-emerald-50 via-teal-50 to-indigo-50 dark:from-emerald-950/20 dark:via-zinc-900 dark:to-indigo-950/20 border border-emerald-200 dark:border-emerald-900/60 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div>
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
-              Conveyor Belt Complete
-            </span>
-            <h4 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
-              Full Golden Demo Workflow Verified!
-            </h4>
-            <p className="text-xs text-zinc-600 dark:text-zinc-300 mt-0.5">
-              Aarav Patel has progressed from a 2/5 regrouping deficit to 5/5 mastery (+60% net FLN growth).
-            </p>
-          </div>
+        <div className="glass-card p-6 sm:p-7 relative overflow-hidden backdrop-blur-xl border border-emerald-200/80 dark:border-emerald-800/60 shadow-xl shadow-emerald-500/5 bg-gradient-to-r from-emerald-50/80 via-teal-50/40 to-indigo-50/60 dark:from-emerald-950/30 dark:via-zinc-900/60 dark:to-indigo-950/30">
+          <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 mb-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                CONVEYOR BELT COMPLETE · 7 OF 7 STEPS
+              </div>
+              <h4 className="text-lg sm:text-xl font-black text-zinc-900 dark:text-zinc-50 tracking-tight">
+                Full Golden Demo Workflow Verified!
+              </h4>
+              <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-300 mt-1 max-w-2xl leading-relaxed">
+                Aarav Patel has progressed from a 2/5 regrouping deficit to 5/5 mastery (<strong className="text-emerald-600 dark:text-emerald-400 font-bold">+60% net FLN growth</strong>) with explainable arithmetic evidence recorded at every step.
+              </p>
+            </div>
 
-          <div className="flex items-center gap-2">
-            <Link
-              href="/dashboard"
-              className="px-5 py-2.5 rounded-xl bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-bold text-xs shadow-xs hover:scale-[1.02] transition-all"
-            >
-              Return to Class Dashboard →
-            </Link>
+            <div className="flex items-center gap-3 shrink-0">
+              <Link
+                href="/dashboard"
+                className="px-6 py-3 rounded-xl bg-gradient-to-r from-zinc-900 to-zinc-800 dark:from-zinc-100 dark:to-zinc-200 text-white dark:text-zinc-900 font-extrabold text-xs sm:text-sm shadow-lg shadow-zinc-900/10 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2"
+              >
+                <span>Return to Class Dashboard</span>
+                <span>→</span>
+              </Link>
+            </div>
           </div>
         </div>
       </div>

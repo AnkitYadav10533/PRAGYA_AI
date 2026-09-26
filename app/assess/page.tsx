@@ -144,20 +144,20 @@ function AssessmentContent() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 w-full space-y-6 flex-1">
         {/* Header with Student Selector & Controls */}
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 sm:p-6 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <div>
+        <div className="glass-card rounded-2xl p-6 sm:p-7 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div className="space-y-1">
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+              <span className="text-xs font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/70 px-2.5 py-0.5 rounded-full border border-indigo-200/60 dark:border-indigo-800/60">
                 🟦 Ankit — Input Layer
               </span>
-              <span className="text-xs text-zinc-400">•</span>
-              <span className="text-xs text-zinc-500">2-Digit Subtraction with Regrouping</span>
+              <span className="text-zinc-300 dark:text-zinc-700">•</span>
+              <span className="text-xs text-zinc-500 font-medium">2-Digit Subtraction with Regrouping</span>
             </div>
-            <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-zinc-50">
+            <h1 className="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-zinc-50 tracking-tight">
               Student Assessment — {selectedStudent.name}
             </h1>
-            <p className="text-xs text-zinc-500 mt-1">
-              Fixed 5-item FLN diagnostic assessment. Input handwritten answers or simulate OCR capture.
+            <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed max-w-2xl">
+              Fixed 5-item FLN diagnostic assessment. Input handwritten answers or simulate OCR capture to trigger the deterministic diagnostic trace.
             </p>
           </div>
 
@@ -171,32 +171,32 @@ function AssessmentContent() {
         </div>
 
         {/* Action Toolbar */}
-        <div className="flex flex-wrap items-center justify-between gap-3 bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 rounded-xl p-3.5">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-4 glass-panel rounded-2xl p-4 shadow-2xs">
+          <div className="flex flex-wrap items-center gap-2.5">
             <button
               onClick={handleFillGoldenDemo}
-              className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-all"
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white text-xs font-bold shadow-md shadow-indigo-600/20 flex items-center gap-2 transition-all hover:-translate-y-0.5"
             >
-              <span>⭐</span>
+              <span className="text-amber-300">⭐</span>
               <span>Fill Golden Demo (Aarav Patel: 46 on Q3)</span>
             </button>
             <button
               onClick={handleFillAllCorrect}
-              className="px-3 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-medium transition-colors"
+              className="px-3.5 py-2 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white/80 dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-bold transition-all shadow-2xs"
             >
-              Fill 100% Correct
+              <span>✓</span> Fill 100% Correct
             </button>
           </div>
 
           <div className="flex items-center gap-3">
-            <label className="flex items-center gap-2 cursor-pointer text-xs text-zinc-600 dark:text-zinc-400 font-medium">
+            <label className="flex items-center gap-2.5 cursor-pointer text-xs text-zinc-700 dark:text-zinc-300 font-semibold bg-white/70 dark:bg-zinc-800/70 px-3 py-1.5 rounded-xl border border-zinc-200/80 dark:border-zinc-700/80 shadow-2xs">
               <input
                 type="checkbox"
                 checked={showOCRMode}
                 onChange={(e) => setShowOCRMode(e.target.checked)}
-                className="rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500"
+                className="w-4 h-4 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500"
               />
-              Simulate OCR Extraction View
+              <span>📷 Simulated OCR View</span>
             </label>
           </div>
         </div>
@@ -208,7 +208,7 @@ function AssessmentContent() {
         />
 
         {/* 5 Assessment Questions Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {FIXED_ASSESSMENT_ITEMS.map((item) => (
             <AssessmentQuestion
               key={item.id}
@@ -221,22 +221,25 @@ function AssessmentContent() {
           ))}
 
           {/* Submission Action Card */}
-          <div className="bg-gradient-to-br from-indigo-500 to-indigo-700 text-white rounded-xl p-6 shadow-md flex flex-col justify-between">
-            <div>
-              <span className="text-xs uppercase font-semibold text-indigo-200 tracking-wider">
-                Conveyor Belt Step 1 → 2
+          <div className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-indigo-600 to-violet-700 text-white rounded-2xl p-6 sm:p-7 shadow-lg shadow-indigo-600/25 flex flex-col justify-between group">
+            {/* Ambient inner glow */}
+            <div className="pointer-events-none absolute -right-10 -bottom-10 w-44 h-44 bg-violet-400/20 rounded-full blur-2xl" />
+
+            <div className="space-y-2 relative">
+              <span className="text-[10px] uppercase font-black tracking-widest text-indigo-200 px-2.5 py-0.5 rounded-full bg-white/10 border border-white/20 inline-block">
+                Pipeline Step 1 → 2
               </span>
-              <h3 className="text-lg font-bold mt-1">Submit & Execute Diagnostic Trace</h3>
-              <p className="text-xs text-indigo-100 mt-2 leading-relaxed">
+              <h3 className="text-xl font-black mt-2 leading-tight">Submit & Execute Diagnostic Trace</h3>
+              <p className="text-xs text-indigo-100 leading-relaxed font-normal">
                 Hands off responses to <strong>Abhay&apos;s Intelligence Engine</strong> to decompose error signatures, validate checks, and formulate suggested diagnosis for <strong>Abhinav&apos;s Teacher Verification</strong>.
               </p>
             </div>
 
-            <div className="pt-4">
+            <div className="pt-6 relative">
               <button
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                className="w-full py-3 rounded-lg bg-white text-indigo-700 hover:bg-indigo-50 font-bold text-sm shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full py-3.5 rounded-xl bg-white text-indigo-700 hover:bg-indigo-50 font-black text-sm shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50 hover:scale-[1.02] active:scale-[0.98]"
               >
                 {isSubmitting ? (
                   <>
@@ -265,3 +268,4 @@ export default function AssessPage() {
     </Suspense>
   );
 }
+
