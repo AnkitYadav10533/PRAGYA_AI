@@ -52,7 +52,7 @@ export function Navbar() {
   ];
 
   return (
-    <header className="sticky top-3 sm:top-4 z-50 w-full max-w-7xl mx-auto px-3 sm:px-6 transition-all duration-300">
+    <header className="sticky top-3 sm:top-4 z-50 w-full max-w-7xl mx-auto px-3 sm:px-6 mb-8 sm:mb-10 transition-all duration-300">
       <div
         className={cn(
           'relative rounded-2xl sm:rounded-3xl transition-all duration-300 px-4 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between gap-3 overflow-hidden',
