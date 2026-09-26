@@ -1,9 +1,23 @@
 'use client';
 
+import {
+  ArrowRight,
+  Lightbulb,
+  Play,
+  Rocket,
+  ScanSearch,
+  Sparkles,
+  TrendingUp,
+  Users,
+  X,
+} from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
-import React from 'react';
+import React, { useState } from 'react';
 
 export default function Home() {
+  const [showVideoModal, setShowVideoModal] = useState(false);
+
   const steps = [
     {
       num: 1,
@@ -63,51 +77,162 @@ export default function Home() {
     },
   ];
 
+  const featureCards = [
+    {
+      title: 'Diagnose Learning Gaps',
+      icon: ScanSearch,
+      bg: 'bg-purple-100/90 text-purple-700 dark:bg-purple-950/80 dark:text-purple-300',
+      href: '/diagnose?studentId=s-01',
+    },
+    {
+      title: 'Personalized Interventions',
+      icon: Users,
+      bg: 'bg-blue-100/90 text-blue-700 dark:bg-blue-950/80 dark:text-blue-300',
+      href: '/intervene?studentId=s-01',
+    },
+    {
+      title: 'Track Progress',
+      icon: TrendingUp,
+      bg: 'bg-emerald-100/90 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300',
+      href: '/reassess?studentId=s-01',
+    },
+    {
+      title: 'Actionable Insights',
+      icon: Lightbulb,
+      bg: 'bg-amber-100/90 text-amber-700 dark:bg-amber-950/80 dark:text-amber-300',
+      href: '/dashboard',
+    },
+  ];
+
   return (
-    <div className="relative flex-1 w-full overflow-hidden py-12 px-4 sm:px-6">
+    <div className="relative flex-1 w-full overflow-hidden pb-16 px-3 sm:px-6">
       {/* Ambient background glow orbs */}
-      <div className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-gradient-to-r from-indigo-500/15 via-purple-500/15 to-pink-500/15 blur-3xl rounded-full" />
-      <div className="pointer-events-none absolute top-96 -left-32 w-80 h-80 bg-blue-500/10 blur-3xl rounded-full" />
-      <div className="pointer-events-none absolute top-96 -right-32 w-80 h-80 bg-purple-500/10 blur-3xl rounded-full" />
+      <div className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 w-[900px] h-[400px] bg-gradient-to-r from-amber-200/20 via-indigo-300/15 to-purple-300/20 blur-3xl rounded-full" />
 
-      <div className="relative max-w-6xl mx-auto space-y-14">
-        {/* Hero Section */}
-        <div className="text-center space-y-5 max-w-3xl mx-auto pt-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold bg-white/80 dark:bg-zinc-800/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800/80 shadow-xs backdrop-blur-md">
-            <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
-            <span>✨ Harmony-First Hackathon MVP Architecture</span>
+      {/* Main Container */}
+      <div className="relative max-w-7xl mx-auto space-y-12">
+        {/* ======================================================== */}
+        {/* HERO SECTION MATCHING REFERENCE DESIGN                    */}
+        {/* ======================================================== */}
+        <section className="relative overflow-hidden rounded-[32px] sm:rounded-[40px] border border-white/80 dark:border-zinc-800/80 bg-gradient-to-b from-white/95 via-indigo-50/20 to-amber-50/30 dark:from-zinc-900/90 dark:via-zinc-900/80 dark:to-zinc-950/90 shadow-[0_16px_50px_rgba(31,38,135,0.06)] backdrop-blur-xl p-4 sm:p-6 lg:p-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 items-center gap-6 lg:gap-4 relative z-10">
+            {/* 1. LEFT COLUMN: Cheerful Girl at Math Desk */}
+            <div className="hidden lg:flex lg:col-span-3 justify-center items-end relative">
+              <div className="relative w-full max-w-[320px] rounded-3xl overflow-hidden drop-shadow-md hover:scale-[1.02] transition-transform duration-300">
+                <Image
+                  src="/hero-girl.png"
+                  alt="Student writing math in notebook"
+                  width={340}
+                  height={380}
+                  className="w-full h-auto object-contain rounded-3xl"
+                  priority
+                />
+              </div>
+            </div>
+
+            {/* 2. CENTER COLUMN: Core Branding, 4 Feature Cards, & CTAs */}
+            <div className="lg:col-span-6 flex flex-col items-center text-center space-y-5 px-1 sm:px-2">
+              {/* Top Sub-Badge */}
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-extrabold bg-amber-50/90 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200/90 dark:border-amber-800/60 shadow-2xs">
+                <span className="text-amber-500">✨</span>
+                <span>AI-Powered FLN Diagnostic Assistant</span>
+              </div>
+
+              {/* Main Typography Header */}
+              <div className="space-y-1.5">
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-[#162a5b] dark:text-zinc-50 flex items-center justify-center gap-2">
+                  <span>PRAGYA</span>
+                  <span className="relative inline-flex items-center text-amber-500">
+                    Ai
+                    <span className="absolute -top-3 -right-2 text-amber-400 text-sm select-none">
+                      ☀️
+                    </span>
+                  </span>
+                </h1>
+                <h2 className="text-lg sm:text-xl lg:text-2xl font-extrabold tracking-tight text-[#1e293b] dark:text-zinc-200">
+                  Foundations for a Brighter Tomorrow
+                </h2>
+              </div>
+
+              {/* Explanatory Lead Paragraph */}
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-zinc-400 max-w-xl mx-auto leading-relaxed font-medium">
+                AI-powered, evidence-driven FLN diagnostics that help teachers understand, support, and strengthen every child&apos;s learning journey in Mathematics.
+              </p>
+
+              {/* 4 Frosted Glass Feature Cards */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 w-full pt-1">
+                {featureCards.map((card) => {
+                  const Icon = card.icon;
+                  return (
+                    <Link
+                      key={card.title}
+                      href={card.href}
+                      className="group bg-white/90 dark:bg-zinc-800/90 hover:bg-white dark:hover:bg-zinc-800 border border-slate-200/70 dark:border-zinc-700/70 rounded-2xl p-3 sm:p-3.5 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col items-center text-center gap-2 hover:-translate-y-0.5 cursor-pointer"
+                    >
+                      <div
+                        className={`w-9 h-9 rounded-xl flex items-center justify-center ${card.bg} transition-transform group-hover:scale-110 shadow-2xs`}
+                      >
+                        <Icon className="w-4 h-4" />
+                      </div>
+                      <span className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-zinc-200 leading-tight">
+                        {card.title}
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+
+              {/* Primary Call to Action Buttons */}
+              <div className="pt-2 flex flex-wrap items-center justify-center gap-3 w-full">
+                <Link
+                  href="/assess?studentId=s-01"
+                  className="px-6 py-3.5 rounded-full bg-gradient-to-r from-indigo-600 via-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-black text-xs sm:text-sm shadow-lg shadow-indigo-600/30 transition-all duration-200 hover:scale-105 active:scale-100 flex items-center gap-2 border border-white/20 whitespace-nowrap"
+                >
+                  <Rocket className="w-4 h-4 fill-white/20" />
+                  <span>Launch Classroom Demo</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+
+                <button
+                  onClick={() => setShowVideoModal(true)}
+                  className="px-5 py-3.5 rounded-full bg-white/95 dark:bg-zinc-800/95 hover:bg-white dark:hover:bg-zinc-800 border border-slate-200/90 dark:border-zinc-700/90 text-slate-800 dark:text-zinc-200 font-extrabold text-xs sm:text-sm shadow-sm hover:shadow transition-all duration-200 flex items-center gap-2 cursor-pointer hover:border-slate-300"
+                >
+                  <Play className="w-4 h-4 text-indigo-600 fill-indigo-600/20" />
+                  <span>Watch Video</span>
+                </button>
+              </div>
+
+              {/* Bottom Trust & Audience Row */}
+              <div className="pt-3 border-t border-slate-200/60 dark:border-zinc-800/80 flex items-center justify-center gap-4 sm:gap-6 text-[11px] font-bold text-slate-500 dark:text-zinc-400">
+                <span className="flex items-center gap-1.5">
+                  <span className="text-amber-500">👥</span> For Teachers
+                </span>
+                <span className="text-slate-300 dark:text-zinc-700">|</span>
+                <span className="flex items-center gap-1.5">
+                  <span className="text-indigo-500">🏫</span> For Schools
+                </span>
+                <span className="text-slate-300 dark:text-zinc-700">|</span>
+                <span className="flex items-center gap-1.5">
+                  <span className="text-rose-500">❤️</span> For Every Child
+                </span>
+              </div>
+            </div>
+
+            {/* 3. RIGHT COLUMN: Friendly Robot with Progress Chart */}
+            <div className="hidden lg:flex lg:col-span-3 justify-center items-end relative">
+              <div className="relative w-full max-w-[320px] rounded-3xl overflow-hidden drop-shadow-md hover:scale-[1.02] transition-transform duration-300">
+                <Image
+                  src="/hero-robot.png"
+                  alt="Friendly AI Robot reading progress report"
+                  width={340}
+                  height={380}
+                  className="w-full h-auto object-contain rounded-3xl"
+                  priority
+                />
+              </div>
+            </div>
           </div>
-
-          <h1 className="text-4xl sm:text-6xl font-black text-zinc-900 dark:text-zinc-50 tracking-tight leading-[1.1]">
-            PRAGYA <br />
-            <span className="bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 bg-clip-text text-transparent">
-              Classroom FLN Diagnostic Assistant
-            </span>
-          </h1>
-
-          <p className="text-base sm:text-lg text-zinc-600 dark:text-zinc-400 leading-relaxed font-normal">
-            Explainable foundational numeracy diagnosis for <strong>2-digit subtraction with regrouping</strong>. Empowers primary teachers with evidence-driven traces, human-in-the-loop verification, and targeted CPA remedial interventions.
-          </p>
-
-          {/* Primary CTA Buttons */}
-          <div className="pt-3 flex flex-wrap items-center justify-center gap-3">
-            <Link
-              href="/assess?studentId=s-01"
-              className="px-6 py-3.5 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold text-sm shadow-lg shadow-indigo-600/25 transition-all duration-200 hover:-translate-y-0.5 flex items-center gap-2.5"
-            >
-              <span className="text-amber-300">⭐</span>
-              <span>Launch Golden Demo Journey (Aarav Patel)</span>
-              <span className="text-indigo-200">→</span>
-            </Link>
-
-            <Link
-              href="/dashboard"
-              className="px-6 py-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/90 dark:bg-zinc-900/90 hover:bg-zinc-100 dark:hover:bg-zinc-800 font-bold text-sm text-zinc-800 dark:text-zinc-200 shadow-xs backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5"
-            >
-              📊 View Class 3-A Dashboard
-            </Link>
-          </div>
-        </div>
+        </section>
 
         {/* Featured Golden Demo Card */}
         <div className="relative overflow-hidden bg-gradient-to-br from-indigo-50/90 via-white to-purple-50/70 dark:from-zinc-900/90 dark:via-zinc-900/80 dark:to-indigo-950/40 border border-indigo-200/80 dark:border-indigo-900/70 rounded-3xl p-6 sm:p-9 shadow-md backdrop-blur-md">
@@ -251,6 +376,66 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {/* Interactive Video / Product Tour Modal */}
+      {showVideoModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md animate-fade-in">
+          <div className="relative w-full max-w-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
+            <button
+              onClick={() => setShowVideoModal(false)}
+              className="absolute top-4 right-4 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-500 transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="space-y-2">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>PRAGYA 60-Second Video Tour</span>
+              </div>
+              <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-zinc-50">
+                How PRAGYA Works in Real Classrooms
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400">
+                Experience the 7-step evidence-driven FLN diagnostic conveyor belt in action.
+              </p>
+            </div>
+
+            {/* Video Mockup Player */}
+            <div className="relative aspect-video rounded-2xl overflow-hidden bg-gradient-to-tr from-slate-900 via-indigo-950 to-slate-900 border border-indigo-500/30 flex flex-col items-center justify-center p-6 text-center text-white space-y-3 shadow-inner">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-r from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/40 animate-pulse">
+                <Play className="w-7 h-7 text-white fill-white ml-0.5" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-extrabold">Interactive Live Demonstration Ready</p>
+                <p className="text-xs text-indigo-200/80 font-mono">
+                  Roll 1: Aarav Patel · 83 − 47 = 46 (Borrow Without Decrement)
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+              <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400">
+                Ready to evaluate live?
+              </span>
+              <div className="flex items-center gap-2.5 w-full sm:w-auto">
+                <button
+                  onClick={() => setShowVideoModal(false)}
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs font-bold text-slate-700 dark:text-zinc-300 hover:bg-slate-50 cursor-pointer"
+                >
+                  Close
+                </button>
+                <Link
+                  href="/assess?studentId=s-01"
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/30 text-center whitespace-nowrap"
+                >
+                  Launch Golden Demo Journey →
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

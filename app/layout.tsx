@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import { Geist, Geist_Mono } from 'next/font/google';
 
 import { Navbar } from '@/components/shared/Navbar';
@@ -46,8 +47,17 @@ export default function RootLayout({
           <Navbar />
           <main className="flex-1 flex flex-col">{children}</main>
           <footer className="border-t border-zinc-200/80 dark:border-zinc-800/80 bg-white/90 dark:bg-zinc-900/90 py-4 px-6 text-center text-xs text-zinc-500">
-            <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
+            <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className="relative w-5 h-5 rounded-md overflow-hidden bg-white/90 dark:bg-zinc-800 border border-zinc-200/80 dark:border-zinc-700/80 shadow-2xs flex items-center justify-center">
+                  <Image
+                    src="/logo_pragya.png"
+                    alt="PRAGYA Logo"
+                    width={20}
+                    height={20}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
                 <span className="font-extrabold text-zinc-800 dark:text-zinc-200 tracking-tight">PRAGYA</span>
                 <span className="text-zinc-300 dark:text-zinc-700">•</span>
                 <span className="text-zinc-600 dark:text-zinc-400">Classroom FLN Subtraction Diagnostic MVP</span>
@@ -55,9 +65,15 @@ export default function RootLayout({
                   Deterministic Engine
                 </span>
               </div>
-              <p className="font-mono text-[11px] text-zinc-500 dark:text-zinc-400">
-                Demo Dataset: Class 3-A (30 Students) · LocalStorage Only · Zero Fake Percentages
-              </p>
+              <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-[11px] text-zinc-500 dark:text-zinc-400">
+                <p className="font-mono">
+                  Demo Dataset: Class 3-A (30 Students) · LocalStorage Only · Zero Fake Percentages
+                </p>
+                <span className="hidden sm:inline text-zinc-300 dark:text-zinc-700">•</span>
+                <p className="font-semibold text-zinc-700 dark:text-zinc-300 flex items-center gap-1">
+                  Made with <span className="text-rose-500 animate-pulse">❤️</span> by <span className="font-bold text-indigo-600 dark:text-indigo-400">Tech_lababdar</span>
+                </p>
+              </div>
             </div>
           </footer>
         </div>
