@@ -18,11 +18,13 @@ import {
   Diagnosis,
   DiagnosticCheck,
   ErrorSignature,
+  EvidenceItem,
   MathematicalValidationResult,
   NormalizedResponse,
   OCRResult,
   Progress,
   RemedialGroup,
+  StandardLearningGap,
   Student,
   StudentResponse,
   SubtractionErrorType,
@@ -512,6 +514,7 @@ export function generateDiagnosis(
   const correctCount = diagnosticResponses.filter((r) => r.isCorrect).length;
 
   let primaryErrorType: SubtractionErrorType = 'no_error';
+  let suggestedGap: StandardLearningGap = 'none';
   let suggestedVerdict = 'Mastery of 2-digit Subtraction with Regrouping';
   let rootCause = 'The student accurately performs 2-digit subtraction with regrouping across all tested items.';
   let confidence: 'high' | 'medium' | 'low' = 'high';
@@ -533,32 +536,53 @@ export function generateDiagnosis(
 
   if (correctCount === diagnosticResponses.length) {
     primaryErrorType = 'no_error';
+    suggestedGap = 'none';
     suggestedVerdict = 'Mastery: 2-digit Subtraction with Regrouping';
     rootCause = 'Demonstrated consistent accuracy in borrowing, tens reduction, and fact retrieval.';
     confidence = 'high';
   } else if (!check1.passed && errorCounts.borrowed_without_decrement > 0) {
     primaryErrorType = 'borrowed_without_decrement';
+    suggestedGap = 'regrouping';
     suggestedVerdict = 'Regrouping Gap: Borrowed 10 into ones without decrementing tens digit';
     rootCause =
       'The student correctly understands the need to borrow 10 to resolve the ones place (e.g., 13 − 7 = 6 in 83 − 47), but consistently omits decrementing the tens place by 1 before subtracting tens. The student calculates (tens1 − tens2) instead of ((tens1 − 1) − tens2).';
     confidence = errorCounts.borrowed_without_decrement >= 2 ? 'high' : 'medium';
   } else if (!check1.passed && errorCounts.smaller_from_larger_ones > 0) {
     primaryErrorType = 'smaller_from_larger_ones';
+    suggestedGap = 'place_value';
     suggestedVerdict = 'Directionality Gap: Subtracted smaller ones digit from larger ones digit';
     rootCause =
       'The student avoids regrouping by reversing the direction of subtraction in the ones place (subtracting top digit from bottom digit). Requires instruction on minuend preservation and place value.';
     confidence = errorCounts.smaller_from_larger_ones >= 2 ? 'high' : 'medium';
   } else if (!check2.passed) {
     primaryErrorType = 'calculation_error';
+    suggestedGap = 'subtraction_facts';
     suggestedVerdict = 'Fluency Gap: Basic subtraction fact recall slip';
     rootCause = 'Regrouping steps are understood, but single-digit subtraction facts showed inconsistency.';
     confidence = 'medium';
   } else {
     primaryErrorType = 'calculation_error';
+    suggestedGap = 'regrouping';
     suggestedVerdict = 'Inconclusive / Mixed Errors: Requires teacher review';
     rootCause = 'Responses exhibited mixed patterns without a single dominant error signature.';
     confidence = 'low';
   }
+
+  // Generate structured evidence items for Abhinav's UI
+  const evidence: EvidenceItem[] = responses
+    .filter((r) => !r.isCorrect)
+    .map((r) => {
+      const q = getQuestionById(r.questionId) || FIXED_ASSESSMENT_ITEMS[0];
+      return {
+        questionId: r.questionId,
+        prompt: q.prompt,
+        observedAnswer: r.studentAnswer,
+        expectedAnswer: q.correctAnswer,
+        isCorrect: r.isCorrect,
+        errorType: r.detectedError,
+        explanation: r.errorExplanation,
+      };
+    });
 
   const initialDecision: TeacherDecision = {
     status: 'pending',
@@ -568,6 +592,10 @@ export function generateDiagnosis(
     id: `diag-${studentId}-${Date.now()}`,
     studentId,
     assessmentId,
+    skill: 'subtraction_with_regrouping',
+    suggestedGap,
+    finalGap: suggestedGap,
+    evidence,
     primaryErrorType,
     suggestedVerdict,
     rootCause,
@@ -587,15 +615,21 @@ export function applyTeacherDecision(
   decision: TeacherDecision
 ): Diagnosis {
   let finalVerdict = diagnosis.suggestedVerdict;
+  let finalGap = diagnosis.suggestedGap;
 
   if (decision.status === 'accepted') {
     finalVerdict = diagnosis.suggestedVerdict;
+    finalGap = diagnosis.suggestedGap;
   } else if (decision.status === 'rejected') {
     finalVerdict = 'Rejected by teacher: Student requires individual re-assessment.';
+    finalGap = 'none';
   } else if (decision.status === 'changed') {
     finalVerdict = decision.customVerdict && decision.customVerdict.trim() !== ''
       ? decision.customVerdict.trim()
       : diagnosis.suggestedVerdict;
+    finalGap = decision.customVerdict && decision.customVerdict.toLowerCase().includes('place')
+      ? 'place_value'
+      : 'regrouping';
   }
 
   return {
@@ -605,6 +639,7 @@ export function applyTeacherDecision(
       decidedAt: new Date().toISOString(),
     },
     finalVerdict,
+    finalGap,
   };
 }
 

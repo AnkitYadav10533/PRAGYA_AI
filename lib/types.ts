@@ -99,10 +99,31 @@ export interface AssessmentItem {
   description: string;
 }
 
+export type StandardLearningGap =
+  | 'regrouping'          // Primary FLN domain
+  | 'place_value'         // Directionality / reverse subtraction
+  | 'subtraction_facts'   // Arithmetic recall slip
+  | 'none';               // Mastery
+
+export interface EvidenceItem {
+  questionId: string;
+  prompt: string;
+  observedAnswer: number | null;
+  expectedAnswer: number;
+  isCorrect: boolean;
+  errorType: SubtractionErrorType;
+  explanation: string;
+}
+
 export interface StudentResponse {
   questionId: string;
-  studentAnswer: number | null;
+  studentId?: string;
+  rawAnswer?: string;               // Raw input/OCR string from Ankit's assessment UI
+  studentAnswer: number | null;      // Numeric answer
+  normalizedAnswer?: number | null;  // Normalized numeric answer
   isCorrect: boolean;
+  correct?: boolean;                 // Convenience alias for isCorrect
+  ocrConfidence?: number;            // Confidence from OCR (0.0 to 1.0)
   detectedError: SubtractionErrorType;
   errorExplanation: string;
   timeSpentSeconds?: number;
@@ -189,6 +210,10 @@ export interface Diagnosis {
   id: string;
   studentId: string;
   assessmentId: string;
+  skill?: string;                   // e.g. "subtraction_with_regrouping"
+  suggestedGap?: StandardLearningGap; // e.g. "regrouping"
+  finalGap?: StandardLearningGap | string; // Teacher confirmed gap
+  evidence?: EvidenceItem[];        // Structured evidence items for Abhinav's UI
   primaryErrorType: SubtractionErrorType;
   suggestedVerdict: string;
   rootCause: string;                // Mathematical explanation of error
