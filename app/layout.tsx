@@ -32,8 +32,8 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col app-background text-zinc-900 dark:text-zinc-100 font-sans relative">
-        <div className="fixed inset-0 bg-slate-900/10 dark:bg-zinc-950/60 pointer-events-none z-0 backdrop-blur-[1px]" />
-        <div className="relative z-10 min-h-full flex flex-col flex-1">
+        <div className="fixed inset-0 bg-slate-900/10 dark:bg-zinc-950/50 pointer-events-none z-0 backdrop-blur-[1px]" />
+        <div className="relative z-10 min-h-full flex flex-col flex-1 bg-gradient-to-b from-white/85 via-indigo-50/30 to-zinc-50/90 dark:from-zinc-950/85 dark:via-zinc-900/85 dark:to-zinc-950/90 backdrop-blur-[2px]">
           <Navbar />
           <main className="flex-1 flex flex-col">{children}</main>
           <footer className="border-t border-zinc-200/80 dark:border-zinc-800/80 bg-white/85 dark:bg-zinc-900/85 backdrop-blur-md py-4 px-6 text-center text-xs text-zinc-500">

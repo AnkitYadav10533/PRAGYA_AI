@@ -64,7 +64,7 @@ export default function Home() {
   ];
 
   return (
-    <div className="relative flex-1 w-full overflow-hidden bg-gradient-to-b from-white via-indigo-50/20 to-zinc-50 dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-950 py-12 px-4 sm:px-6">
+    <div className="relative flex-1 w-full overflow-hidden py-12 px-4 sm:px-6">
       {/* Ambient background glow orbs */}
       <div className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-gradient-to-r from-indigo-500/15 via-purple-500/15 to-pink-500/15 blur-3xl rounded-full" />
       <div className="pointer-events-none absolute top-96 -left-32 w-80 h-80 bg-blue-500/10 blur-3xl rounded-full" />
