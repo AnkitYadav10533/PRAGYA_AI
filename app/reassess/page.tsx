@@ -11,12 +11,14 @@ import { calculateProgress } from '@/lib/engine';
 import { SEED_REASSESSMENTS, SEED_STUDENTS } from '@/lib/mock';
 import { AssessmentSubmission, Progress, ReassessmentRecord, Student } from '@/lib/types';
 import {
+  getStoredDiagnoses,
   getStoredReassessments,
   getStoredStudents,
   getStoredSubmissions,
   saveStoredReassessment,
   updateStudentStatus,
 } from '@/lib/utils';
+import { buildParentReportData } from '@/lib/report-builder';
 
 // Predefined same-skill reassessment questions aligned 1:1 with the 5 assessment items
 interface ParallelReassessmentItem {
@@ -101,6 +103,9 @@ function ReassessContent() {
   const [progress, setProgress] = useState<Progress | null>(null);
   const [isSaved, setIsSaved] = useState<boolean>(false);
   const [showPrintModal, setShowPrintModal] = useState<boolean>(false);
+  const [parentEmail, setParentEmail] = useState<string>('parent.aarav@example.com');
+  const [emailStatus, setEmailStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
+  const [emailMessage, setEmailMessage] = useState<string>('');
 
   useEffect(() => {
     const loadedStudents = getStoredStudents();
@@ -108,6 +113,9 @@ function ReassessContent() {
 
     const found = loadedStudents.find((s) => s.id === studentIdParam) || loadedStudents[0];
     setSelectedStudent(found);
+    setParentEmail(`parent.${found.name.toLowerCase().replace(/[^a-z0-9]/g, '.')}@example.com`);
+    setEmailStatus('idle');
+    setEmailMessage('');
 
     // Dynamically retrieve student's actual assessment submission
     const submissions = getStoredSubmissions();
@@ -241,6 +249,54 @@ function ReassessContent() {
     saveStoredReassessment(updatedRecord);
     updateStudentStatus(selectedStudent.id, 'reassessed');
     setIsSaved(true);
+  };
+
+  const handleSendParentEmail = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const cleanEmail = parentEmail.trim();
+    if (!cleanEmail || !cleanEmail.includes('@') || !cleanEmail.includes('.')) {
+      setEmailStatus('error');
+      setEmailMessage('⚠ Please provide a valid parent email address.');
+      return;
+    }
+
+    setEmailStatus('sending');
+    setEmailMessage('Sending report to parent...');
+
+    try {
+      const diagnoses = getStoredDiagnoses();
+      const studentDiag = diagnoses.find((d) => d.studentId === selectedStudent.id) || null;
+
+      const reportData = buildParentReportData({
+        student: selectedStudent,
+        diagnosis: studentDiag,
+        submission: baselineSubmission,
+        reassessment: reassessmentRecord,
+        progress: progress,
+      });
+
+      const res = await fetch('/api/reports/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          studentId: selectedStudent.id,
+          parentEmail: cleanEmail,
+          reportData,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setEmailStatus('success');
+        setEmailMessage(`✓ Report sent successfully to ${cleanEmail}`);
+      } else {
+        setEmailStatus('error');
+        setEmailMessage(`⚠ Failed to send report: ${data.error || 'Server error occurred.'}`);
+      }
+    } catch {
+      setEmailStatus('error');
+      setEmailMessage('⚠ Failed to send report. Please check your connection.');
+    }
   };
 
   return (
@@ -423,6 +479,85 @@ function ReassessContent() {
             </div>
           </div>
         )}
+
+        {/* Parent Report Communication Layer (Resend Integration) */}
+        <div className="glass-card p-6 sm:p-7 relative overflow-hidden backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-xl shadow-indigo-500/5 space-y-5">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-100 dark:border-zinc-800 pb-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-lg font-black text-zinc-900 dark:text-zinc-50">
+                  ✉️ Parent Progress Communication
+                </span>
+                <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                  Resend Service
+                </span>
+              </div>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                Deliver an encouraging, evidence-driven summary of {selectedStudent.name}&apos;s learning journey directly to the student&apos;s family.
+              </p>
+            </div>
+
+            <div className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-3 py-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800 shrink-0">
+              🔒 Privacy-Safe: Technical codes and OCR raw files are excluded
+            </div>
+          </div>
+
+          <form onSubmit={handleSendParentEmail} className="space-y-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3 max-w-2xl">
+              <div className="flex-1 space-y-1.5">
+                <label htmlFor="parent-email-input" className="block text-xs font-bold text-zinc-700 dark:text-zinc-300">
+                  Parent Email Address
+                </label>
+                <input
+                  id="parent-email-input"
+                  type="email"
+                  value={parentEmail}
+                  onChange={(e) => {
+                    setParentEmail(e.target.value);
+                    if (emailStatus !== 'idle') setEmailStatus('idle');
+                  }}
+                  placeholder="parent@school.org (or delivered@resend.dev for test)"
+                  disabled={emailStatus === 'sending'}
+                  required
+                  className="w-full px-4 py-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all disabled:opacity-50"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={emailStatus === 'sending' || !parentEmail.trim()}
+                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-indigo-600/25 hover:shadow-indigo-600/35 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed whitespace-nowrap"
+              >
+                {emailStatus === 'sending' ? (
+                  <>
+                    <span className="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                    <span>Sending...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>✉</span>
+                    <span>Send Report to Parent</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Email Dispatch Feedback Status */}
+            {emailStatus === 'success' && (
+              <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs font-bold flex items-center gap-2">
+                <span className="text-base">✓</span>
+                <span>{emailMessage || 'Report sent successfully'}</span>
+              </div>
+            )}
+
+            {emailStatus === 'error' && (
+              <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-200 text-xs font-bold flex items-center gap-2">
+                <span className="text-base">⚠</span>
+                <span>{emailMessage || 'Failed to send report'}</span>
+              </div>
+            )}
+          </form>
+        </div>
 
         {/* 5 Reassessment Questions Grid */}
         <div className="glass-card p-6 sm:p-7 relative overflow-hidden backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-xl shadow-indigo-500/5 space-y-6">
