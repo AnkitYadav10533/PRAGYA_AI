@@ -27,6 +27,8 @@ export type ErrorSignatureCode =
   | 'REGROUPING_ERROR'              // Consistent with borrow without tens decrement
   | 'PLACE_VALUE_ERROR'             // Subtracted smaller ones from larger ones
   | 'SUBTRACTION_FACT_ERROR'        // Basic fact arithmetic calculation error
+  | 'ADDITION_FACT_ERROR'           // Addition arithmetic fact calculation error
+  | 'FACT_ERROR'                    // General arithmetic fact recall error
   | 'NO_CLEAR_PATTERN'              // Multiple mixed or inconsistent errors
   | 'OCR_UNCERTAIN'                 // Ambiguous or illegible extraction
   | 'NO_ERROR';                     // Accurate mathematical solution
@@ -145,6 +147,7 @@ export interface AssessmentSubmission {
   studentId: string;
   classId: string;
   type: 'baseline' | 'reassessment';
+  questions?: AssessmentItem[];
   responses: StudentResponse[];
   correctCount: number;
   totalCount: number;

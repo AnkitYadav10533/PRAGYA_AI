@@ -310,7 +310,53 @@ export function detectErrorSignature(
   const tens2 = Math.floor(question.num2 / 10);
   const ones2 = question.num2 % 10;
 
-  // PATTERN 1: Borrowed without decrementing tens
+  // MULTIPLICATION / DIVISION OPERATIONS
+  if (question.operation === 'multiplication' || question.operation === 'division') {
+    const absDiff = Math.abs(observedAnswer - question.correctAnswer);
+    if (absDiff <= 3) {
+      return {
+        code: 'FACT_ERROR',
+        type: 'calculation_error',
+        description: 'Single-digit arithmetic recall slip',
+        explanation: `The student made an arithmetic fact recall slip on ${question.prompt} (answered ${observedAnswer}, expected ${question.correctAnswer}).`,
+        mathematicalRationale: `Observed ${observedAnswer} deviates by ±${absDiff} from expected ${question.correctAnswer}.`,
+        questionId: question.id,
+      };
+    }
+  }
+
+  // ADDITION OPERATION (Regrouping across tens)
+  if (question.operation === 'addition') {
+    // If student forgot to carry 10 to tens column:
+    // e.g. 39 + 46 -> 9 + 6 = 15 ones (records 5), 3 + 4 = 7 tens -> records 75 instead of 85
+    if (ones1 + ones2 >= 10) {
+      const forgotCarryValue = (tens1 + tens2) * 10 + ((ones1 + ones2) % 10);
+      if (observedAnswer === forgotCarryValue) {
+        return {
+          code: 'REGROUPING_ERROR',
+          type: 'borrowed_without_decrement', // mapped for regrouping gap
+          description: 'Forgot to carry tens digit after bundling ones',
+          explanation: `The student added the ones column (${ones1} + ${ones2} = ${ones1 + ones2}) and wrote ${(ones1 + ones2) % 10}, but failed to carry the 1 ten into the tens column (calculated ${tens1} + ${tens2} = ${tens1 + tens2} instead of ${tens1 + tens2 + 1}). The answer ${observedAnswer} is 10 less than the correct sum ${question.correctAnswer}.`,
+          mathematicalRationale: `Observed ${observedAnswer} matches (tens1 + tens2) * 10 + ((ones1 + ones2) % 10). Missing tens carry after ones regrouping.`,
+          questionId: question.id,
+        };
+      }
+    }
+
+    const absDiff = Math.abs(observedAnswer - question.correctAnswer);
+    if (absDiff <= 2) {
+      return {
+        code: 'ADDITION_FACT_ERROR',
+        type: 'calculation_error',
+        description: 'Single-digit arithmetic recall slip',
+        explanation: `The student made a basic single-digit addition fact slip on ${question.prompt} (off by ${absDiff}).`,
+        mathematicalRationale: `Observed ${observedAnswer} is within ±${absDiff} of expected ${question.correctAnswer}.`,
+        questionId: question.id,
+      };
+    }
+  }
+
+  // SUBTRACTION PATTERN 1: Borrowed without decrementing tens
   // Ones: (10 + ones1) - ones2
   // Tens: tens1 - tens2 (instead of (tens1 - 1) - tens2)
   // Value = (tens1 - tens2) * 10 + ((10 + ones1) - ones2) = Expected + 10
@@ -327,7 +373,7 @@ export function detectErrorSignature(
     };
   }
 
-  // PATTERN 2: Subtracted smaller ones digit from larger ones digit (Directionality / Place Value Error)
+  // SUBTRACTION PATTERN 2: Subtracted smaller ones digit from larger ones digit (Directionality / Place Value Error)
   // Ones: |ones1 - ones2| = ones2 - ones1
   // Tens: tens1 - tens2
   // Value = (tens1 - tens2) * 10 + (ones2 - ones1)
@@ -364,7 +410,7 @@ export function detectErrorSignature(
       code: 'SUBTRACTION_FACT_ERROR',
       type: 'calculation_error',
       description: 'Single-digit arithmetic recall slip',
-      explanation: `The student executed the regrouping structure but made a basic arithmetic fact slip (off by ${absDiff}).`,
+      explanation: `The student executed the algorithm structure but made a basic arithmetic fact slip (off by ${absDiff}).`,
       mathematicalRationale: `Observed ${observedAnswer} is within ±${absDiff} of expected ${question.correctAnswer}.`,
       questionId: question.id,
     };
@@ -408,13 +454,17 @@ export function analyzeResponse(
 }
 
 /**
- * Analyzes an array of answers mapped against the 5 fixed assessment items.
+ * Analyzes an array of answers mapped against assessment items.
  */
 export function analyzeResponses(
-  responses: Array<{ questionId: string; studentAnswer: number | null; timeSpentSeconds?: number }>
+  responses: Array<{ questionId: string; studentAnswer: number | null; timeSpentSeconds?: number }>,
+  customQuestions?: AssessmentItem[]
 ): StudentResponse[] {
   return responses.map((r) => {
-    const question = getQuestionById(r.questionId) || FIXED_ASSESSMENT_ITEMS[0];
+    const question =
+      customQuestions?.find((q) => q.id === r.questionId) ||
+      getQuestionById(r.questionId) ||
+      FIXED_ASSESSMENT_ITEMS[0];
     return analyzeResponse(question, r.studentAnswer, r.timeSpentSeconds);
   });
 }
@@ -423,58 +473,90 @@ export function analyzeResponses(
  * Executes the exactly 2 verdict-bearing checks + 1 warm-up check.
  * 
  * Check 1 (Verdict-Bearing): Regrouping Across Tens
- * Check 2 (Verdict-Bearing): Correct Subtraction Execution After Regrouping
+ * Check 2 (Verdict-Bearing): Correct Arithmetic Execution After Regrouping
  * Check 3 (Support Warm-up): Warm-up Readiness Check (Non-verdict-bearing)
  */
-export function runDiagnosticChecks(responses: StudentResponse[]): DiagnosticCheck[] {
+export function runDiagnosticChecks(
+  responses: StudentResponse[],
+  customQuestions?: AssessmentItem[]
+): DiagnosticCheck[] {
   const warmupResponse = responses.find((r) => r.questionId === 'q1');
   const diagnosticResponses = responses.filter((r) => r.questionId !== 'q1');
 
+  const op = customQuestions?.[0]?.operation || 'subtraction';
+  const q1Prompt = customQuestions?.[0]?.prompt || '52 − 27';
+
   // Check 1: Regrouping Across Tens (Verdict-bearing)
-  // Passes if the student does NOT exhibit systematic regrouping errors (borrowed_without_decrement or smaller_from_larger)
   const regroupingErrors = diagnosticResponses.filter(
     (r) => r.detectedError === 'borrowed_without_decrement' || r.detectedError === 'smaller_from_larger_ones'
   );
   const check1Passed = regroupingErrors.length === 0;
   const check1Evidence = check1Passed
-    ? 'All diagnostic items demonstrated appropriate regrouping and tens decrementing.'
+    ? 'All diagnostic items demonstrated appropriate regrouping and place-value adjustment.'
     : `Identified ${regroupingErrors.length} instance(s) of regrouping slips across diagnostic items (${regroupingErrors.map((r) => `${r.questionId}: answered ${r.studentAnswer}`).join(', ')}).`;
 
-  // Check 2: Correct Subtraction Execution After Regrouping (Verdict-bearing)
-  // Passes if the student's arithmetic facts in the ones column are accurate
+  // Check 2: Correct Arithmetic Execution (Verdict-bearing)
   const arithmeticFactErrors = diagnosticResponses.filter(
     (r) => r.detectedError === 'calculation_error'
   );
   const check2Passed = arithmeticFactErrors.length === 0;
   const check2Evidence = check2Passed
-    ? 'Single-digit arithmetic facts in ones column were accurately calculated.'
+    ? 'Single-digit arithmetic facts were accurately calculated.'
     : `Identified ${arithmeticFactErrors.length} basic arithmetic slip(s) in diagnostic items.`;
 
   // Check 3: Warm-up Support Question (Non-verdict-bearing)
   const warmupPassed = warmupResponse ? warmupResponse.isCorrect : false;
   const warmupAnswer = warmupResponse ? (warmupResponse.studentAnswer ?? 'None') : 'Unattempted';
-  const warmupEvidence = `Support question Q1 (52 − 27) answered: ${warmupAnswer} (${warmupPassed ? 'Correct' : 'Incorrect'}). Baseline readiness indicator only — not used in verdict calculation.`;
+  const warmupEvidence = `Support question Q1 (${q1Prompt}) answered: ${warmupAnswer} (${warmupPassed ? 'Correct' : 'Incorrect'}). Baseline readiness indicator only — not used in verdict calculation.`;
+
+  const isAddition = op === 'addition';
+  const isMultiplication = op === 'multiplication';
+  const isDivision = op === 'division';
+
+  const check1Title = isAddition
+    ? 'Regrouping & Carry Across Tens'
+    : isMultiplication
+    ? 'Multiplication Fact Recall & Regrouping'
+    : isDivision
+    ? 'Division Factor Recall & Quotient Formation'
+    : 'Regrouping Across Tens';
+
+  const check1Indicator = isAddition
+    ? 'Verifies that ones >= 10 are bundled and carried into the tens column.'
+    : isMultiplication
+    ? 'Verifies partial product grouping and place-value column alignment.'
+    : isDivision
+    ? 'Verifies quotient determination and remainder handling.'
+    : 'Verifies that 1 ten is borrowed into 10 ones AND the tens digit is decremented by 1.';
+
+  const check2Title = isAddition
+    ? 'Addition Execution & Single-Digit Fact Fluency'
+    : isMultiplication
+    ? 'Multiplication Execution & Fact Accuracy'
+    : isDivision
+    ? 'Division Execution & Subtraction Steps'
+    : 'Subtraction Execution After Regrouping';
 
   return [
     {
       id: 'check-1',
       checkNumber: 1,
-      title: 'Regrouping Across Tens',
+      title: check1Title,
       type: 'verdict_bearing',
       verdictBearing: true,
       passed: check1Passed,
       evidence: check1Evidence,
-      indicator: 'Verifies that 1 ten is borrowed into 10 ones AND the tens digit is decremented by 1.',
+      indicator: check1Indicator,
     },
     {
       id: 'check-2',
       checkNumber: 2,
-      title: 'Subtraction Execution After Regrouping',
+      title: check2Title,
       type: 'verdict_bearing',
       verdictBearing: true,
       passed: check2Passed,
       evidence: check2Evidence,
-      indicator: 'Verifies single-digit subtraction facts after regrouping is initiated.',
+      indicator: 'Verifies single-digit arithmetic facts after regrouping/operation is initiated.',
     },
     {
       id: 'check-3',
@@ -504,19 +586,23 @@ export function runDiagnosticChecks(responses: StudentResponse[]): DiagnosticChe
 export function generateDiagnosis(
   studentId: string,
   assessmentId: string,
-  responses: StudentResponse[]
+  responses: StudentResponse[],
+  customQuestions?: AssessmentItem[]
 ): Diagnosis {
-  const checks = runDiagnosticChecks(responses);
+  const checks = runDiagnosticChecks(responses, customQuestions);
   const check1 = checks[0]; // Regrouping Across Tens (verdict_bearing)
   const check2 = checks[1]; // Subtraction Execution (verdict_bearing)
 
   const diagnosticResponses = responses.filter((r) => r.questionId !== 'q1');
   const correctCount = diagnosticResponses.filter((r) => r.isCorrect).length;
 
+  const op = customQuestions?.[0]?.operation || 'subtraction';
+  const opLabel = op.charAt(0).toUpperCase() + op.slice(1);
+
   let primaryErrorType: SubtractionErrorType = 'no_error';
   let suggestedGap: StandardLearningGap = 'none';
-  let suggestedVerdict = 'Mastery of 2-digit Subtraction with Regrouping';
-  let rootCause = 'The student accurately performs 2-digit subtraction with regrouping across all tested items.';
+  let suggestedVerdict = `Mastery of 2-digit ${opLabel} with Regrouping`;
+  let rootCause = `The student accurately performs 2-digit ${op} across all tested items.`;
   let confidence: 'high' | 'medium' | 'low' = 'high';
 
   // Count error frequencies in diagnostic items
@@ -537,15 +623,18 @@ export function generateDiagnosis(
   if (correctCount === diagnosticResponses.length) {
     primaryErrorType = 'no_error';
     suggestedGap = 'none';
-    suggestedVerdict = 'Mastery: 2-digit Subtraction with Regrouping';
-    rootCause = 'Demonstrated consistent accuracy in borrowing, tens reduction, and fact retrieval.';
+    suggestedVerdict = `Mastery: 2-digit ${opLabel}`;
+    rootCause = `Demonstrated consistent accuracy in bundling/unbundling, place-value adjustment, and fact retrieval.`;
     confidence = 'high';
   } else if (!check1.passed && errorCounts.borrowed_without_decrement > 0) {
     primaryErrorType = 'borrowed_without_decrement';
     suggestedGap = 'regrouping';
-    suggestedVerdict = 'Regrouping Gap: Borrowed 10 into ones without decrementing tens digit';
-    rootCause =
-      'The student correctly understands the need to borrow 10 to resolve the ones place (e.g., 13 − 7 = 6 in 83 − 47), but consistently omits decrementing the tens place by 1 before subtracting tens. The student calculates (tens1 − tens2) instead of ((tens1 − 1) − tens2).';
+    suggestedVerdict = op === 'addition'
+      ? 'Regrouping Gap: Failed to carry bundled tens digit into tens column'
+      : 'Regrouping Gap: Borrowed 10 into ones without decrementing tens digit';
+    rootCause = op === 'addition'
+      ? 'The student correctly bundles ones >= 10, but omits carrying the 1 ten into the tens column.'
+      : 'The student correctly understands the need to borrow 10 to resolve the ones place, but consistently omits decrementing the tens place by 1 before subtracting tens.';
     confidence = errorCounts.borrowed_without_decrement >= 2 ? 'high' : 'medium';
   } else if (!check1.passed && errorCounts.smaller_from_larger_ones > 0) {
     primaryErrorType = 'smaller_from_larger_ones';
@@ -557,8 +646,8 @@ export function generateDiagnosis(
   } else if (!check2.passed) {
     primaryErrorType = 'calculation_error';
     suggestedGap = 'subtraction_facts';
-    suggestedVerdict = 'Fluency Gap: Basic subtraction fact recall slip';
-    rootCause = 'Regrouping steps are understood, but single-digit subtraction facts showed inconsistency.';
+    suggestedVerdict = `Fluency Gap: Basic ${op} fact recall slip`;
+    rootCause = 'Algorithm steps are understood, but single-digit arithmetic facts showed inconsistency.';
     confidence = 'medium';
   } else {
     primaryErrorType = 'calculation_error';
@@ -568,11 +657,19 @@ export function generateDiagnosis(
     confidence = 'low';
   }
 
+  const getQ = (qid: string): AssessmentItem => {
+    if (customQuestions) {
+      const found = customQuestions.find((q) => q.id === qid);
+      if (found) return found;
+    }
+    return getQuestionById(qid) || FIXED_ASSESSMENT_ITEMS[0];
+  };
+
   // Generate structured evidence items for Abhinav's UI
   const evidence: EvidenceItem[] = responses
     .filter((r) => !r.isCorrect)
     .map((r) => {
-      const q = getQuestionById(r.questionId) || FIXED_ASSESSMENT_ITEMS[0];
+      const q = getQ(r.questionId);
       return {
         questionId: r.questionId,
         prompt: q.prompt,
@@ -592,7 +689,7 @@ export function generateDiagnosis(
     id: `diag-${studentId}-${Date.now()}`,
     studentId,
     assessmentId,
-    skill: 'subtraction_with_regrouping',
+    skill: `${op}_with_regrouping`,
     suggestedGap,
     finalGap: suggestedGap,
     evidence,

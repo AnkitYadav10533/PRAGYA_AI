@@ -17,8 +17,10 @@ import { generateDynamicQuestionsWithGemini, MathOperationType } from '@/lib/gem
 import { SEED_STUDENTS } from '@/lib/mock';
 import { AssessmentItem, AssessmentSubmission, Student, StudentResponse } from '@/lib/types';
 import {
+  getQuestionsForStudent,
   getStoredStudents,
   getStoredSubmissions,
+  saveQuestionsForStudent,
   saveStoredDiagnosis,
   saveStoredSubmission,
   updateStudentStatus,
@@ -58,6 +60,17 @@ function AssessmentContent() {
 
     const found = loadedStudents.find((s) => s.id === studentIdParam) || loadedStudents[0];
     setSelectedStudent(found);
+
+    // Retrieve saved questions for this student (dynamic, OCR, or standard fallback)
+    const savedQuestions = getQuestionsForStudent(found.id);
+    if (savedQuestions && savedQuestions.length > 0) {
+      setCurrentQuestions(savedQuestions);
+      const isCustom = savedQuestions[0].prompt !== FIXED_ASSESSMENT_ITEMS[0].prompt;
+      setIsDynamicMode(isCustom);
+      if (savedQuestions[0].operation) {
+        setSelectedOperation(savedQuestions[0].operation as MathOperationType);
+      }
+    }
 
     // If student already has a submission, load existing answers
     const submissions = getStoredSubmissions();
@@ -106,6 +119,7 @@ function AssessmentContent() {
       const generated = await generateDynamicQuestionsWithGemini(selectedOperation);
       setCurrentQuestions(generated);
       setIsDynamicMode(true);
+      saveQuestionsForStudent(selectedStudent.id, generated);
       // Clear answers for fresh questions
       const freshAnswers: Record<string, string> = {};
       generated.forEach((q) => {
@@ -123,13 +137,22 @@ function AssessmentContent() {
   const handleResetToStandard = () => {
     setCurrentQuestions(FIXED_ASSESSMENT_ITEMS);
     setIsDynamicMode(false);
+    saveQuestionsForStudent(selectedStudent.id, FIXED_ASSESSMENT_ITEMS);
     setAnswers({ q1: '', q2: '', q3: '', q4: '', q5: '' });
   };
 
-  // Apply OCR extracted answers from Gemini Vision
-  const handleApplyOCRAnswers = (extracted: Record<string, string>) => {
-    setAnswers((prev) => ({ ...prev, ...extracted }));
-    setOcrSuccessMsg('✓ Successfully transcribed handwritten answers via Gemini 3.5 Flash Lite Vision!');
+  // Apply OCR extracted answers and questions from Gemini Vision
+  const handleApplyOCRExtracted = (extractedAnswers: Record<string, string>, extractedQuestions?: AssessmentItem[]) => {
+    setAnswers((prev) => ({ ...prev, ...extractedAnswers }));
+    if (extractedQuestions && extractedQuestions.length > 0) {
+      setCurrentQuestions(extractedQuestions);
+      setIsDynamicMode(true);
+      saveQuestionsForStudent(selectedStudent.id, extractedQuestions);
+      if (extractedQuestions[0]?.operation) {
+        setSelectedOperation(extractedQuestions[0].operation as MathOperationType);
+      }
+    }
+    setOcrSuccessMsg('✓ Successfully transcribed questions & handwritten answers via Gemini Vision OCR!');
     setTimeout(() => {
       setOcrSuccessMsg(null);
     }, 6000);
@@ -160,17 +183,19 @@ function AssessmentContent() {
       studentId: selectedStudent.id,
       classId: selectedStudent.classId,
       type: 'baseline',
+      questions: currentQuestions,
       responses: analyzedResponses,
       correctCount,
       totalCount: currentQuestions.length,
       submittedAt: new Date().toISOString(),
     };
 
-    // Save submission
+    // Save submission and persistent questions for student
     saveStoredSubmission(submission);
+    saveQuestionsForStudent(selectedStudent.id, currentQuestions);
 
-    // Generate deterministic diagnosis
-    const diagnosis = generateDiagnosis(selectedStudent.id, submissionId, analyzedResponses);
+    // Generate deterministic diagnosis using student's actual questions
+    const diagnosis = generateDiagnosis(selectedStudent.id, submissionId, analyzedResponses, currentQuestions);
     saveStoredDiagnosis(diagnosis);
 
     // Update student status
@@ -417,7 +442,7 @@ function AssessmentContent() {
       {/* Gemini Vision OCR Modal */}
       {showOCRModal && (
         <GeminiOCRModal
-          onApplyAnswers={handleApplyOCRAnswers}
+          onApplyExtracted={handleApplyOCRExtracted}
           onClose={() => setShowOCRModal(false)}
         />
       )}

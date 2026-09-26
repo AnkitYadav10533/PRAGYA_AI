@@ -1,5 +1,6 @@
 import {
   calculateClassGapSummary,
+  FIXED_ASSESSMENT_ITEMS,
 } from './engine';
 import {
   SEED_CLASS,
@@ -10,6 +11,7 @@ import {
   SEED_SUBMISSIONS,
 } from './mock';
 import {
+  AssessmentItem,
   AssessmentSubmission,
   ClassGapSummary,
   ClassRoom,
@@ -32,6 +34,8 @@ const STORAGE_KEYS = {
   GROUPS: 'pragya_groups_v1',
   REASSESSMENTS: 'pragya_reassessments_v1',
   CLASS: 'pragya_class_v1',
+  QUESTIONS: 'pragya_questions_v1',
+  STUDENT_QUESTIONS: 'pragya_student_questions_v1',
 };
 
 function isClient(): boolean {
@@ -103,6 +107,12 @@ export function saveStoredDiagnosis(diagnosis: Diagnosis): void {
   setItem(STORAGE_KEYS.DIAGNOSES, updated);
 }
 
+export function getStoredClassGapSummary(): ClassGapSummary {
+  const diagnoses = getStoredDiagnoses();
+  const students = getStoredStudents();
+  return calculateClassGapSummary('class-3a', students, diagnoses);
+}
+
 export function getStoredGroups(): RemedialGroup[] {
   return getItem<RemedialGroup[]>(STORAGE_KEYS.GROUPS, SEED_GROUPS);
 }
@@ -122,10 +132,41 @@ export function saveStoredReassessment(record: ReassessmentRecord): void {
   setItem(STORAGE_KEYS.REASSESSMENTS, updated);
 }
 
-export function getStoredClassGapSummary(): ClassGapSummary {
-  const students = getStoredStudents();
-  const diagnoses = getStoredDiagnoses();
-  return calculateClassGapSummary(SEED_CLASS.id, students, diagnoses);
+export function getStoredQuestions(): AssessmentItem[] {
+  return getItem<AssessmentItem[]>(STORAGE_KEYS.QUESTIONS, FIXED_ASSESSMENT_ITEMS);
+}
+
+export function saveStoredQuestions(questions: AssessmentItem[]): void {
+  setItem(STORAGE_KEYS.QUESTIONS, questions);
+}
+
+export function getQuestionsForStudent(studentId: string): AssessmentItem[] {
+  const submissions = getStoredSubmissions();
+  const sub = submissions.find((s) => s.studentId === studentId);
+  if (sub && sub.questions && sub.questions.length > 0) {
+    return sub.questions;
+  }
+  const studentMap = getItem<Record<string, AssessmentItem[]>>(STORAGE_KEYS.STUDENT_QUESTIONS, {});
+  if (studentMap[studentId] && studentMap[studentId].length > 0) {
+    return studentMap[studentId];
+  }
+  return getStoredQuestions();
+}
+
+export function saveQuestionsForStudent(studentId: string, questions: AssessmentItem[]): void {
+  saveStoredQuestions(questions);
+  const studentMap = getItem<Record<string, AssessmentItem[]>>(STORAGE_KEYS.STUDENT_QUESTIONS, {});
+  studentMap[studentId] = questions;
+  setItem(STORAGE_KEYS.STUDENT_QUESTIONS, studentMap);
+
+  const submissions = getStoredSubmissions();
+  const sub = submissions.find((s) => s.studentId === studentId);
+  if (sub) {
+    saveStoredSubmission({
+      ...sub,
+      questions,
+    });
+  }
 }
 
 export function resetPragyaStorage(): void {
@@ -136,4 +177,6 @@ export function resetPragyaStorage(): void {
   window.localStorage.removeItem(STORAGE_KEYS.SUBMISSIONS);
   window.localStorage.removeItem(STORAGE_KEYS.GROUPS);
   window.localStorage.removeItem(STORAGE_KEYS.REASSESSMENTS);
+  window.localStorage.removeItem(STORAGE_KEYS.QUESTIONS);
+  window.localStorage.removeItem(STORAGE_KEYS.STUDENT_QUESTIONS);
 }

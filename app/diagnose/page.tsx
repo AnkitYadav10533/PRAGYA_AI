@@ -14,12 +14,14 @@ import { Breadcrumb } from '@/components/shared/Breadcrumb';
 import { detectErrorSignature, FIXED_ASSESSMENT_ITEMS } from '@/lib/engine';
 import { SEED_DIAGNOSES, SEED_STUDENTS, SEED_SUBMISSIONS } from '@/lib/mock';
 import {
+  AssessmentItem,
   AssessmentSubmission,
   Diagnosis,
   Student,
   TeacherDecision as TeacherDecisionType,
 } from '@/lib/types';
 import {
+  getQuestionsForStudent,
   getStoredDiagnoses,
   getStoredStudents,
   getStoredSubmissions,
@@ -33,6 +35,7 @@ function DiagnoseContent() {
 
   const [students, setStudents] = useState<Student[]>(SEED_STUDENTS);
   const [selectedStudent, setSelectedStudent] = useState<Student>(SEED_STUDENTS[0]);
+  const [questions, setQuestions] = useState<AssessmentItem[]>(FIXED_ASSESSMENT_ITEMS);
   const [diagnosis, setDiagnosis] = useState<Diagnosis | null>(null);
   const [submission, setSubmission] = useState<AssessmentSubmission | null>(null);
   const [selectedQuestionId, setSelectedQuestionId] = useState<string>('q3');
@@ -43,6 +46,9 @@ function DiagnoseContent() {
 
     const found = loadedStudents.find((s) => s.id === studentIdParam) || loadedStudents[0];
     setSelectedStudent(found);
+
+    const studentQuestions = getQuestionsForStudent(found.id);
+    setQuestions(studentQuestions);
 
     const diagnoses = getStoredDiagnoses();
     const currentDiag = diagnoses.find((d) => d.studentId === found.id) || SEED_DIAGNOSES[0];
@@ -56,8 +62,8 @@ function DiagnoseContent() {
     const firstErr = currentSub.responses.find((r) => !r.isCorrect);
     if (firstErr) {
       setSelectedQuestionId(firstErr.questionId);
-    } else {
-      setSelectedQuestionId('q3');
+    } else if (studentQuestions.length > 0) {
+      setSelectedQuestionId(studentQuestions[0].id);
     }
   }, [studentIdParam]);
 
@@ -97,7 +103,7 @@ function DiagnoseContent() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 w-full space-y-6 flex-1">
         {/* Top Header & Student Selector */}
-        <div className="glass-card p-6 sm:p-7 relative overflow-hidden backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-xl shadow-amber-500/5">
+        <div className="glass-card p-6 sm:p-7 relative overflow-hidden border border-white/60 dark:border-white/10 shadow-xl shadow-amber-500/5">
           <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-bl from-amber-500/10 via-purple-500/5 to-transparent rounded-full blur-2xl pointer-events-none" />
 
           <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
@@ -149,7 +155,7 @@ function DiagnoseContent() {
             />
 
             {/* Next Step Action Card */}
-            <div className="glass-card p-6 relative overflow-hidden backdrop-blur-xl border border-indigo-200/80 dark:border-indigo-800/60 shadow-xl shadow-indigo-500/5 bg-gradient-to-br from-indigo-50/70 via-purple-50/40 to-white/60 dark:from-indigo-950/30 dark:via-purple-950/20 dark:to-zinc-900/60">
+            <div className="glass-card p-6 relative overflow-hidden border border-indigo-200/80 dark:border-indigo-800/60 shadow-xl shadow-indigo-500/5 bg-gradient-to-br from-indigo-50/70 via-purple-50/40 to-white/60 dark:from-indigo-950/30 dark:via-purple-950/20 dark:to-zinc-900/60">
               <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
                   <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200 mb-1.5">
@@ -186,7 +192,7 @@ function DiagnoseContent() {
         {/* Visual Cause Graph & Mental Model with Dynamic Item Selector */}
         {(() => {
           const activeQuestion =
-            FIXED_ASSESSMENT_ITEMS.find((q) => q.id === selectedQuestionId) || FIXED_ASSESSMENT_ITEMS[2];
+            questions.find((q) => q.id === selectedQuestionId) || questions[0];
           const activeResponse = submission.responses.find((r) => r.questionId === activeQuestion.id);
           const activeErrorSignature = detectErrorSignature(
             activeQuestion,
@@ -206,7 +212,7 @@ function DiagnoseContent() {
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                  {FIXED_ASSESSMENT_ITEMS.map((item) => {
+                  {questions.map((item) => {
                     const resp = submission.responses.find((r) => r.questionId === item.id);
                     const isSelected = selectedQuestionId === item.id;
                     const isErr = resp && !resp.isCorrect;
@@ -244,7 +250,7 @@ function DiagnoseContent() {
         })()}
 
         {/* Full Mathematical Evidence Breakdown */}
-        <EvidenceList responses={submission.responses} />
+        <EvidenceList responses={submission.responses} questions={questions} />
       </div>
     </div>
   );

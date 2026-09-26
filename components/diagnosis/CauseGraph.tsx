@@ -31,6 +31,9 @@ export function CauseGraph({ question, studentAnswer, errorSignature }: CauseGra
   // Determine error category details dynamically
   const errorType = errorSignature.type;
 
+  const isAddition = question.operation === 'addition';
+  const isMultOrDiv = question.operation === 'multiplication' || question.operation === 'division';
+
   // Dynamic explanation generators
   let onesObservedTitle = '1. Ones Column Step';
   let onesObservedStatus = '✓ Accurate';
@@ -44,7 +47,45 @@ export function CauseGraph({ question, studentAnswer, errorSignature }: CauseGra
 
   let clinicalInsight = '';
 
-  if (isCorrect) {
+  if (isAddition) {
+    if (isCorrect) {
+      onesObservedText = `Added ones: ${ones1} + ${ones2} = ${ones1 + ones2}. Bundled 10 ones into 1 ten, left ${expectedOnes} ones.`;
+      tensObservedText = `Added tens with carried ten: ${tens1} + ${tens2} + 1 = ${expectedTens} tens.`;
+      clinicalInsight = `The student correctly executed bundling/regrouping in the ones place and added the carried ten into the tens place.`;
+    } else if (errorType === 'borrowed_without_decrement') {
+      onesObservedTitle = '1. Ones Step: Bundling Ones';
+      onesObservedStatus = '✓ Accurate';
+      onesObservedText = `Added ones: ${ones1} + ${ones2} = ${ones1 + ones2}. Recorded ${expectedOnes} in ones column. Accurate!`;
+
+      tensObservedTitle = '2. Tens Step: Carry Adjustment';
+      tensObservedStatus = '✗ Critical Slip Point';
+      tensIsSlip = true;
+      tensObservedText = `Failed to add carried ten: calculated ${tens1} + ${tens2} = ${tens1 + tens2} instead of ${tens1} + ${tens2} + 1 = ${expectedTens}!`;
+
+      clinicalInsight = `The student correctly added the ones place (${ones1} + ${ones2} = ${ones1 + ones2}) and recorded ${expectedOnes}, but forgot to add the 1 carried ten to the tens column. This confirms an addition regrouping/carry gap.`;
+    } else {
+      onesObservedTitle = '1. Addition Facts Step';
+      onesObservedStatus = '✗ Arithmetic Slip';
+      onesIsSlip = true;
+      onesObservedText = `Expected ${question.prompt} = ${correctAnswer}, but recorded ${studentAnswer}.`;
+      clinicalInsight = `The student made a computational slip during addition column calculation.`;
+    }
+  } else if (isMultOrDiv) {
+    if (isCorrect) {
+      onesObservedText = `Recalled arithmetic facts accurately: ${question.prompt} = ${correctAnswer}.`;
+      tensObservedText = `Accurate algorithmic execution.`;
+      clinicalInsight = `The student demonstrated complete fact fluency and algorithmic recall for ${question.prompt}.`;
+    } else {
+      onesObservedTitle = '1. Arithmetic Fact Recall';
+      onesObservedStatus = '✗ Fact Slip';
+      onesIsSlip = true;
+      onesObservedText = `Expected ${question.prompt} = ${correctAnswer}, but student recorded ${studentAnswer}.`;
+      tensObservedTitle = '2. Verification Step';
+      tensObservedStatus = '— Fact Slip';
+      tensObservedText = `Deviates by ${studentAnswer !== null ? Math.abs(studentAnswer - correctAnswer) : '?'} from expected result.`;
+      clinicalInsight = `The student exhibited an arithmetic fact retrieval slip on ${question.prompt}.`;
+    }
+  } else if (isCorrect) {
     onesObservedText = `Regrouped 1 ten into 10 ones: ${10 + ones1} − ${ones2} = ${expectedOnes} ones.`;
     tensObservedText = `Decremented tens to ${tens1 - 1}: ${tens1 - 1} − ${tens2} = ${expectedTens} tens.`;
     clinicalInsight = `The student correctly executed both the regrouping exchange in the ones place and the subsequent decrement in the tens place.`;
@@ -104,7 +145,7 @@ export function CauseGraph({ question, studentAnswer, errorSignature }: CauseGra
       tensObservedText = `Calculated tens accurately: ${expectedTens}.`;
     }
 
-    clinicalInsight = `The student made a computational slip during column subtraction. Review whether regrouping was attempted or if single-digit subtraction facts require reinforcement.`;
+    clinicalInsight = `The student made a computational slip during column calculation. Review whether regrouping was attempted or if single-digit arithmetic facts require reinforcement.`;
   }
 
   return (
@@ -116,7 +157,7 @@ export function CauseGraph({ question, studentAnswer, errorSignature }: CauseGra
             Cognitive Error Decomposition
           </span>
           <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-            <span>🧠</span> Mental Model & Cause Graph ({num1} − {num2})
+            <span>🧠</span> Mental Model & Cause Graph ({question.prompt})
           </h3>
         </div>
         <div className="flex items-center gap-2">
@@ -195,7 +236,7 @@ export function CauseGraph({ question, studentAnswer, errorSignature }: CauseGra
             <div className="p-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800/40">
               <span className="font-semibold text-zinc-800 dark:text-zinc-200">3. Result Produced</span>
               <p className="text-[11px] text-zinc-600 dark:text-zinc-300 mt-1 font-mono">
-                Tens: {studentTens !== null ? studentTens : '?'} | Ones: {studentOnes !== null ? studentOnes : '?'} → <strong>{studentAnswer}</strong>
+                {studentTens !== null && !isMultOrDiv ? `Tens: ${studentTens} | Ones: ${studentOnes !== null ? studentOnes : '?'} → ` : ''}<strong>{studentAnswer}</strong>
                 {!isCorrect && studentAnswer !== null && (
                   <span className="text-rose-600 dark:text-rose-400 ml-1">
                     ({studentAnswer > correctAnswer ? `+${studentAnswer - correctAnswer}` : studentAnswer - correctAnswer} from expected {correctAnswer})
@@ -218,26 +259,72 @@ export function CauseGraph({ question, studentAnswer, errorSignature }: CauseGra
           </div>
 
           <div className="space-y-2 text-xs">
-            <div className="p-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800/40">
-              <span className="font-semibold text-zinc-800 dark:text-zinc-200">1. Inspect Ones & Regroup 1 Ten</span>
-              <p className="text-[11px] text-zinc-600 dark:text-zinc-300 mt-1 font-mono">
-                Cannot subtract {ones2} from {ones1} → Exchange 1 ten for 10 ones: {10 + ones1} − {ones2} = {expectedOnes} ones.
-              </p>
-            </div>
+            {isAddition ? (
+              <>
+                <div className="p-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800/40">
+                  <span className="font-semibold text-zinc-800 dark:text-zinc-200">1. Add Ones & Regroup 1 Ten</span>
+                  <p className="text-[11px] text-zinc-600 dark:text-zinc-300 mt-1 font-mono">
+                    {ones1} + {ones2} = {ones1 + ones2}. Write {expectedOnes} in ones, carry 1 ten.
+                  </p>
+                </div>
+                <div className="p-2.5 rounded-lg border border-emerald-300 dark:border-emerald-800 bg-emerald-50/60 dark:bg-emerald-950/40">
+                  <span className="font-bold text-emerald-800 dark:text-emerald-300">2. Add Tens with Carried Ten</span>
+                  <p className="text-[11px] text-emerald-700 dark:text-emerald-300 mt-1 font-mono">
+                    {tens1} + {tens2} + 1 = {expectedTens} tens.
+                  </p>
+                </div>
+                <div className="p-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800/40">
+                  <span className="font-semibold text-zinc-800 dark:text-zinc-200">3. Combined Sum</span>
+                  <p className="text-[11px] text-zinc-600 dark:text-zinc-300 mt-1 font-mono">
+                    Tens: {expectedTens} | Ones: {expectedOnes} → <strong>{correctAnswer}</strong>
+                  </p>
+                </div>
+              </>
+            ) : isMultOrDiv ? (
+              <>
+                <div className="p-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800/40">
+                  <span className="font-semibold text-zinc-800 dark:text-zinc-200">1. Operation Recall</span>
+                  <p className="text-[11px] text-zinc-600 dark:text-zinc-300 mt-1 font-mono">
+                    Recall basic multiplication/division fact: {question.prompt}.
+                  </p>
+                </div>
+                <div className="p-2.5 rounded-lg border border-emerald-300 dark:border-emerald-800 bg-emerald-50/60 dark:bg-emerald-950/40">
+                  <span className="font-bold text-emerald-800 dark:text-emerald-300">2. Algorithmic Formation</span>
+                  <p className="text-[11px] text-emerald-700 dark:text-emerald-300 mt-1 font-mono">
+                    {question.prompt} = {correctAnswer}.
+                  </p>
+                </div>
+                <div className="p-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800/40">
+                  <span className="font-semibold text-zinc-800 dark:text-zinc-200">3. Verified Result</span>
+                  <p className="text-[11px] text-zinc-600 dark:text-zinc-300 mt-1 font-mono">
+                    Result → <strong>{correctAnswer}</strong>
+                  </p>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="p-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800/40">
+                  <span className="font-semibold text-zinc-800 dark:text-zinc-200">1. Inspect Ones & Regroup 1 Ten</span>
+                  <p className="text-[11px] text-zinc-600 dark:text-zinc-300 mt-1 font-mono">
+                    Cannot subtract {ones2} from {ones1} → Exchange 1 ten for 10 ones: {10 + ones1} − {ones2} = {expectedOnes} ones.
+                  </p>
+                </div>
 
-            <div className="p-2.5 rounded-lg border border-emerald-300 dark:border-emerald-800 bg-emerald-50/60 dark:bg-emerald-950/40">
-              <span className="font-bold text-emerald-800 dark:text-emerald-300">2. Decrement Tens Column</span>
-              <p className="text-[11px] text-emerald-700 dark:text-emerald-300 mt-1 font-mono">
-                Cross out {tens1}, write {tens1 - 1}. Then ({tens1} − 1) − {tens2} = {expectedTens} tens.
-              </p>
-            </div>
+                <div className="p-2.5 rounded-lg border border-emerald-300 dark:border-emerald-800 bg-emerald-50/60 dark:bg-emerald-950/40">
+                  <span className="font-bold text-emerald-800 dark:text-emerald-300">2. Decrement Tens Column</span>
+                  <p className="text-[11px] text-emerald-700 dark:text-emerald-300 mt-1 font-mono">
+                    Cross out {tens1}, write {tens1 - 1}. Then ({tens1} − 1) − {tens2} = {expectedTens} tens.
+                  </p>
+                </div>
 
-            <div className="p-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800/40">
-              <span className="font-semibold text-zinc-800 dark:text-zinc-200">3. Combined Difference</span>
-              <p className="text-[11px] text-zinc-600 dark:text-zinc-300 mt-1 font-mono">
-                Tens: {expectedTens} | Ones: {expectedOnes} → <strong>{correctAnswer}</strong>
-              </p>
-            </div>
+                <div className="p-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800/40">
+                  <span className="font-semibold text-zinc-800 dark:text-zinc-200">3. Combined Difference</span>
+                  <p className="text-[11px] text-zinc-600 dark:text-zinc-300 mt-1 font-mono">
+                    Tens: {expectedTens} | Ones: {expectedOnes} → <strong>{correctAnswer}</strong>
+                  </p>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>

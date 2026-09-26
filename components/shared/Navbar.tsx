@@ -13,13 +13,14 @@ export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [lang, setLang] = useState<Language>('en');
 
-  // JS Scroll listener for dynamic glassmorphism island effect
+  // High-performance scroll listener: only triggers state change when threshold is crossed
   useEffect(() => {
+    let lastState = false;
     const handleScroll = () => {
-      if (window.scrollY > 20) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
+      const scrolled = window.scrollY > 20;
+      if (scrolled !== lastState) {
+        lastState = scrolled;
+        setIsScrolled(scrolled);
       }
     };
 

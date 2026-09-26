@@ -21,7 +21,7 @@ export default function GroupsPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 w-full space-y-8">
       {/* Header Banner */}
-      <div className="glass-card p-6 sm:p-8 relative overflow-hidden backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-xl shadow-purple-500/5">
+      <div className="glass-card p-6 sm:p-8 relative overflow-hidden border border-white/60 dark:border-white/10 shadow-xl shadow-purple-500/5">
         <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-bl from-purple-500/10 via-indigo-500/5 to-transparent rounded-full blur-2xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">

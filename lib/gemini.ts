@@ -11,6 +11,7 @@ export type MathOperationType = 'sub' | 'add' | 'multiplication' | 'div';
 
 export interface GeminiOCRResult {
   recognizedAnswers: Record<string, string>; // { q1: "25", q2: "33", ... }
+  recognizedQuestions: AssessmentItem[]; // Extracted AssessmentItem[] questions from worksheet
   transcription: string;
   notes: string;
   confidence: number;
@@ -180,6 +181,7 @@ Return ONLY a strictly valid JSON object matching this schema without any conver
 
 /**
  * Performs Handwriting OCR on a student's assessment worksheet using Gemini 3.5 Flash Lite Vision.
+ * Extracts BOTH the mathematical questions/problems AND the student's handwritten responses.
  */
 export async function performGeminiVisionOCR(
   imageBase64: string,
@@ -191,13 +193,71 @@ export async function performGeminiVisionOCR(
 
   const prompt = `You are a specialized Educational Handwriting OCR Assistant for classroom math assessments.
 Analyze this student's handwritten math worksheet or assessment paper.
-Extract the student's handwritten final answers for each question (e.g. Questions 1 through 5, or Q1 to Q5).
+Extract BOTH the math questions/problems AND the student's handwritten final answers for each question (e.g. Questions 1 through 5, or Q1 to Q5).
 
+For each question:
+1. Extract the full math question prompt (e.g. "52 − 27" or "58 + 27" or "7 × 8" or "56 ÷ 7").
+2. Extract the numbers: num1 and num2.
+3. Identify the operation: "subtraction", "addition", "multiplication", or "division".
+4. Calculate the mathematically correct answer (correctAnswer as integer).
+5. Extract the student's handwritten answer (studentAnswer as string, e.g. "46", "33", "25").
 Pay special attention to handwritten digits (such as 46, 33, 25, 38, 45).
 If a student wrote an answer like 46 for 83 - 47, accurately capture 46.
 
-Return ONLY a strictly valid JSON object matching this schema:
+Return ONLY a strictly valid JSON object matching this schema without markdown fences or other text:
 {
+  "questions": [
+    {
+      "id": "q1",
+      "order": 1,
+      "prompt": "52 − 27",
+      "num1": 52,
+      "num2": 27,
+      "operation": "subtraction",
+      "correctAnswer": 25,
+      "studentAnswer": "25"
+    },
+    {
+      "id": "q2",
+      "order": 2,
+      "prompt": "71 − 38",
+      "num1": 71,
+      "num2": 38,
+      "operation": "subtraction",
+      "correctAnswer": 33,
+      "studentAnswer": "33"
+    },
+    {
+      "id": "q3",
+      "order": 3,
+      "prompt": "83 − 47",
+      "num1": 83,
+      "num2": 47,
+      "operation": "subtraction",
+      "correctAnswer": 36,
+      "studentAnswer": "46"
+    },
+    {
+      "id": "q4",
+      "order": 4,
+      "prompt": "64 − 26",
+      "num1": 64,
+      "num2": 26,
+      "operation": "subtraction",
+      "correctAnswer": 38,
+      "studentAnswer": "38"
+    },
+    {
+      "id": "q5",
+      "order": 5,
+      "prompt": "92 − 57",
+      "num1": 92,
+      "num2": 57,
+      "operation": "subtraction",
+      "correctAnswer": 35,
+      "studentAnswer": "45"
+    }
+  ],
   "recognizedAnswers": {
     "q1": "25",
     "q2": "33",
@@ -233,7 +293,7 @@ Return ONLY a strictly valid JSON object matching this schema:
         ],
         generationConfig: {
           temperature: 0.1,
-          maxOutputTokens: 1024,
+          maxOutputTokens: 2048,
         },
       }),
     }
@@ -249,8 +309,66 @@ Return ONLY a strictly valid JSON object matching this schema:
   const cleaned = cleanJsonOutput(rawText);
   const parsed = JSON.parse(cleaned);
 
+  interface RawOcrQuestion {
+    id?: string;
+    order?: number;
+    prompt?: string;
+    num1?: number | string;
+    num2?: number | string;
+    operation?: string;
+    correctAnswer?: number | string;
+    studentAnswer?: number | string;
+    requiresRegrouping?: boolean;
+    targetSkill?: string;
+    description?: string;
+  }
+
+  // Parse questions into standard AssessmentItem[]
+  const rawQuestions: RawOcrQuestion[] = Array.isArray(parsed.questions) ? parsed.questions : [];
+  const recognizedQuestions: AssessmentItem[] = rawQuestions.slice(0, 5).map((q: RawOcrQuestion, idx: number) => {
+    const num1 = Number(q.num1) || 0;
+    const num2 = Number(q.num2) || 0;
+    const op = q.operation || 'subtraction';
+    let correct = Number(q.correctAnswer);
+    if (isNaN(correct)) {
+      if (op === 'addition' || op === 'add') correct = num1 + num2;
+      else if (op === 'multiplication' || op === 'mult') correct = num1 * num2;
+      else if (op === 'division' || op === 'div') correct = Math.floor(num1 / (num2 || 1));
+      else correct = num1 - num2;
+    }
+    const opSymbol = op.includes('add') ? '+' : op.includes('mult') ? '×' : op.includes('div') ? '÷' : '−';
+    const prompt = q.prompt || `${num1} ${opSymbol} ${num2}`;
+
+    return {
+      id: q.id || `q${idx + 1}`,
+      order: idx + 1,
+      questionNumber: idx + 1,
+      prompt,
+      num1,
+      operandA: num1,
+      num2,
+      operandB: num2,
+      correctAnswer: correct,
+      requiresRegrouping: q.requiresRegrouping ?? true,
+      operation: op,
+      type: idx === 0 ? 'warmup' : 'diagnostic',
+      targetSkill: q.targetSkill || `Worksheet FLN ${op}`,
+      description: q.description || `Worksheet question #${idx + 1} extracted by Gemini Vision OCR`,
+    };
+  });
+
+  // Build recognizedAnswers from parsed.recognizedAnswers or parsed.questions
+  const recognizedAnswers: Record<string, string> = parsed.recognizedAnswers || {};
+  rawQuestions.forEach((q: RawOcrQuestion, idx: number) => {
+    const qId = q.id || `q${idx + 1}`;
+    if (q.studentAnswer !== undefined && !recognizedAnswers[qId]) {
+      recognizedAnswers[qId] = String(q.studentAnswer);
+    }
+  });
+
   return {
-    recognizedAnswers: parsed.recognizedAnswers || {},
+    recognizedAnswers,
+    recognizedQuestions,
     transcription: parsed.transcription || 'Handwritten mathematical response sheet.',
     notes: parsed.notes || 'Successfully analyzed via Gemini 3.5 Flash Lite Vision.',
     confidence: Number(parsed.confidence) || 94,

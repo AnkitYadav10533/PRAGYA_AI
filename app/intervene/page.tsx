@@ -10,8 +10,9 @@ import { REMEDIAL_ACTIVITIES } from '@/lib/activities';
 import { FIXED_ASSESSMENT_ITEMS } from '@/lib/engine';
 import { speakText } from '@/lib/i18n';
 import { SEED_DIAGNOSES, SEED_STUDENTS } from '@/lib/mock';
-import { Diagnosis, RemedialActivity, Student } from '@/lib/types';
+import { AssessmentItem, Diagnosis, RemedialActivity, Student } from '@/lib/types';
 import {
+  getQuestionsForStudent,
   getStoredDiagnoses,
   getStoredStudents,
   getStoredSubmissions,
@@ -25,6 +26,7 @@ function InterveneContent() {
 
   const [students, setStudents] = useState<Student[]>(SEED_STUDENTS);
   const [selectedStudent, setSelectedStudent] = useState<Student>(SEED_STUDENTS[0]);
+  const [questions, setQuestions] = useState<AssessmentItem[]>(FIXED_ASSESSMENT_ITEMS);
   const [diagnosis, setDiagnosis] = useState<Diagnosis | null>(null);
   const [activity, setActivity] = useState<RemedialActivity>(REMEDIAL_ACTIVITIES[0]);
   const [activeStep, setActiveStep] = useState<number>(1);
@@ -42,6 +44,9 @@ function InterveneContent() {
     const found = loadedStudents.find((s) => s.id === studentIdParam) || loadedStudents[0];
     setSelectedStudent(found);
 
+    const studentQuestions = getQuestionsForStudent(found.id);
+    setQuestions(studentQuestions);
+
     const diagnoses = getStoredDiagnoses();
     const currentDiag = diagnoses.find((d) => d.studentId === found.id) || SEED_DIAGNOSES[0];
     setDiagnosis(currentDiag);
@@ -58,17 +63,17 @@ function InterveneContent() {
     const errors = sub ? sub.responses.filter((r) => !r.isCorrect).map((r) => r.questionId) : ['q3', 'q5'];
     setStudentErrors(errors);
 
-    const defaultQId = errors.length > 0 ? errors[0] : 'q3';
+    const defaultQId = errors.length > 0 ? errors[0] : (studentQuestions[0]?.id || 'q3');
     setTargetQuestionId(defaultQId);
 
-    const targetItem = FIXED_ASSESSMENT_ITEMS.find((q) => q.id === defaultQId) || FIXED_ASSESSMENT_ITEMS[2];
+    const targetItem = studentQuestions.find((q) => q.id === defaultQId) || studentQuestions[0] || FIXED_ASSESSMENT_ITEMS[0];
     setTensCount(Math.floor(targetItem.num1 / 10));
     setOnesCount(targetItem.num1 % 10);
     setHasRegrouped(false);
   }, [studentIdParam]);
 
   const activeQuestion =
-    FIXED_ASSESSMENT_ITEMS.find((q) => q.id === targetQuestionId) || FIXED_ASSESSMENT_ITEMS[2];
+    questions.find((q) => q.id === targetQuestionId) || questions[0] || FIXED_ASSESSMENT_ITEMS[0];
   const num1 = activeQuestion.num1;
   const num2 = activeQuestion.num2;
   const tens1 = Math.floor(num1 / 10);
@@ -81,7 +86,7 @@ function InterveneContent() {
 
   const handleSelectQuestion = (qId: string) => {
     setTargetQuestionId(qId);
-    const q = FIXED_ASSESSMENT_ITEMS.find((item) => item.id === qId) || FIXED_ASSESSMENT_ITEMS[2];
+    const q = questions.find((item) => item.id === qId) || questions[0];
     setTensCount(Math.floor(q.num1 / 10));
     setOnesCount(q.num1 % 10);
     setHasRegrouped(false);
@@ -197,7 +202,7 @@ function InterveneContent() {
           </div>
 
           <div className="flex flex-wrap gap-2">
-            {FIXED_ASSESSMENT_ITEMS.map((item) => {
+            {questions.map((item) => {
               const isSelected = targetQuestionId === item.id;
               const isErr = studentErrors.includes(item.id);
 
@@ -233,7 +238,7 @@ function InterveneContent() {
             <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800/80 pb-3.5">
               <div>
                 <h3 className="font-black text-base text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
-                  <span>🧱</span> Interactive Place Value Board ({num1} − {num2})
+                  <span>🧱</span> Interactive Place Value Board ({activeQuestion.prompt})
                 </h3>
                 <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
                   Simulate physical exchange: unbundle 1 ten rod into 10 unit cubes before subtracting.
@@ -248,7 +253,7 @@ function InterveneContent() {
                   Reset
                 </button>
                 <span className="text-xs font-mono font-black px-3 py-1 rounded-xl bg-indigo-50 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/60 shadow-2xs">
-                  {num1} − {num2}
+                  {activeQuestion.prompt}
                 </span>
               </div>
             </div>

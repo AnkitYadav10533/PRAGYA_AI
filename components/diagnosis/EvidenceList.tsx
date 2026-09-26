@@ -3,14 +3,15 @@
 import React from 'react';
 
 import { FIXED_ASSESSMENT_ITEMS } from '@/lib/engine';
-import { StudentResponse } from '@/lib/types';
+import { AssessmentItem, StudentResponse } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 interface EvidenceListProps {
   responses: StudentResponse[];
+  questions?: AssessmentItem[];
 }
 
-export function EvidenceList({ responses }: EvidenceListProps) {
+export function EvidenceList({ responses, questions }: EvidenceListProps) {
   return (
     <div className="glass-card rounded-2xl p-6 sm:p-7 shadow-xs space-y-4">
       <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800/80 pb-4">
@@ -19,7 +20,7 @@ export function EvidenceList({ responses }: EvidenceListProps) {
             <span>🔍</span> Student Mathematical Trace & Evidence
           </h3>
           <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-            Breakdown of student answers against expected difference and identified error signatures.
+            Breakdown of student answers against expected answer and identified error signatures.
           </p>
         </div>
         <span className="text-xs font-mono font-bold px-3 py-1 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200/60 dark:border-zinc-700/60 shadow-2xs">
@@ -29,7 +30,7 @@ export function EvidenceList({ responses }: EvidenceListProps) {
 
       <div className="divide-y divide-zinc-100 dark:divide-zinc-800/80">
         {responses.map((resp, idx) => {
-          const item = FIXED_ASSESSMENT_ITEMS.find((q) => q.id === resp.questionId);
+          const item = questions?.find((q) => q.id === resp.questionId) || FIXED_ASSESSMENT_ITEMS.find((q) => q.id === resp.questionId);
           const isGoldenDemoError = item?.id === 'q3' && resp.studentAnswer === 46;
 
           return (
