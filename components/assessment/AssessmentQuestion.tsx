@@ -9,18 +9,12 @@ interface AssessmentQuestionProps {
   item: AssessmentItem;
   studentAnswer: string;
   onAnswerChange: (value: string) => void;
-  rawText?: string;
-  ocrConfidence?: number;
-  showOCRMode?: boolean;
 }
 
 export function AssessmentQuestion({
   item,
   studentAnswer,
   onAnswerChange,
-  rawText,
-  ocrConfidence = 96,
-  showOCRMode = false,
 }: AssessmentQuestionProps) {
   // Extract digits for vertical column alignment
   const tens1 = Math.floor(item.num1 / 10);
@@ -95,18 +89,6 @@ export function AssessmentQuestion({
           />
         </div>
       </div>
-
-      {/* OCR handwriting extraction simulation if enabled */}
-      {showOCRMode && (
-        <div className="mt-2 pt-2 border-t border-zinc-100 dark:border-zinc-800 text-[11px] text-zinc-500 flex items-center justify-between">
-          <span className="flex items-center gap-1 font-mono">
-            <span>📷 Raw:</span> &quot;{rawText || studentAnswer || '—'}&quot;
-          </span>
-          <span className="text-emerald-600 dark:text-emerald-400 font-medium">
-            OCR Conf: {ocrConfidence}%
-          </span>
-        </div>
-      )}
     </div>
   );
 }

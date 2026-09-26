@@ -2,22 +2,38 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { Button } from '@/components/shared/Button';
+import { getTranslation, Language } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
 export function Navbar() {
   const pathname = usePathname();
+  const [lang, setLang] = useState<Language>('en');
+
+  useEffect(() => {
+    const saved = localStorage.getItem('pragya_lang') as Language;
+    if (saved === 'hi' || saved === 'en') {
+      setLang(saved);
+    }
+  }, []);
+
+  const toggleLanguage = () => {
+    const nextLang: Language = lang === 'en' ? 'hi' : 'en';
+    setLang(nextLang);
+    localStorage.setItem('pragya_lang', nextLang);
+    window.dispatchEvent(new Event('language_changed'));
+  };
 
   const navLinks = [
-    { href: '/dashboard', label: 'Dashboard', icon: '📊' },
-    { href: '/class', label: 'Class 3-A', icon: '🏫' },
-    { href: '/assess', label: 'Assess', icon: '📝' },
-    { href: '/diagnose', label: 'Diagnose & Verify', icon: '🔍' },
-    { href: '/groups', label: 'Groups', icon: '👥' },
-    { href: '/intervene', label: 'Intervene', icon: '🛠' },
-    { href: '/reassess', label: 'Progress', icon: '📈' },
+    { href: '/dashboard', label: lang === 'hi' ? 'डैशबोर्ड' : 'Dashboard', icon: '📊' },
+    { href: '/class', label: lang === 'hi' ? 'कक्षा ३-अ' : 'Class 3-A', icon: '🏫' },
+    { href: '/assess', label: lang === 'hi' ? 'आकलन' : 'Assess', icon: '📝' },
+    { href: '/diagnose', label: lang === 'hi' ? 'निदान व सत्यापन' : 'Diagnose & Verify', icon: '🔍' },
+    { href: '/groups', label: lang === 'hi' ? 'समूह' : 'Groups', icon: '👥' },
+    { href: '/intervene', label: lang === 'hi' ? 'हस्तक्षेप' : 'Intervene', icon: '🛠' },
+    { href: '/reassess', label: lang === 'hi' ? 'प्रगति' : 'Progress', icon: '📈' },
   ];
 
   return (
@@ -33,11 +49,11 @@ export function Navbar() {
               <span className="text-lg font-bold tracking-tight text-zinc-900 dark:text-zinc-50 flex items-center gap-1.5">
                 PRAGYA
                 <span className="text-[10px] uppercase font-semibold tracking-wider px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
-                  FLN MVP
+                  {getTranslation(lang, 'fln_tag')}
                 </span>
               </span>
               <p className="text-[11px] text-zinc-500 leading-none hidden sm:block">
-                Subtraction Diagnostic Assistant
+                {getTranslation(lang, 'brand_sub')}
               </p>
             </div>
           </Link>
@@ -64,15 +80,25 @@ export function Navbar() {
           })}
         </nav>
 
-        {/* Golden Demo Quick Action */}
+        {/* Action Controls: Language Toggle & Golden Demo */}
         <div className="flex items-center gap-2">
+          {/* Bilingual Toggle Button */}
+          <button
+            onClick={toggleLanguage}
+            title="Toggle between English and हिन्दी"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors text-zinc-700 dark:text-zinc-200"
+          >
+            <span>🌐</span>
+            <span>{lang === 'en' ? 'हिन्दी' : 'English'}</span>
+          </button>
+
           <Link href="/assess?studentId=s-01">
             <Button
               size="sm"
               className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-sm transition-all text-xs sm:text-sm px-3 sm:px-4 py-1.5 rounded-lg flex items-center gap-1.5"
             >
               <span>⭐</span>
-              <span className="hidden sm:inline">Launch</span> Golden Demo
+              <span className="hidden sm:inline">Golden Demo</span>
             </Button>
           </Link>
         </div>

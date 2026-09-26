@@ -5,11 +5,13 @@ import { useSearchParams } from 'next/navigation';
 import React, { Suspense, useEffect, useState } from 'react';
 
 import { StudentSelector } from '@/components/assessment/StudentSelector';
+import { CauseGraph } from '@/components/diagnosis/CauseGraph';
 import { DiagnosisCard } from '@/components/diagnosis/DiagnosisCard';
 import { DiagnosticChecks } from '@/components/diagnosis/DiagnosticChecks';
 import { EvidenceList } from '@/components/diagnosis/EvidenceList';
 import { TeacherDecision } from '@/components/diagnosis/TeacherDecision';
 import { Breadcrumb } from '@/components/shared/Breadcrumb';
+import { detectErrorSignature, FIXED_ASSESSMENT_ITEMS } from '@/lib/engine';
 import { SEED_DIAGNOSES, SEED_STUDENTS, SEED_SUBMISSIONS } from '@/lib/mock';
 import {
   AssessmentSubmission,
@@ -33,6 +35,7 @@ function DiagnoseContent() {
   const [selectedStudent, setSelectedStudent] = useState<Student>(SEED_STUDENTS[0]);
   const [diagnosis, setDiagnosis] = useState<Diagnosis | null>(null);
   const [submission, setSubmission] = useState<AssessmentSubmission | null>(null);
+  const [selectedQuestionId, setSelectedQuestionId] = useState<string>('q3');
 
   useEffect(() => {
     const loadedStudents = getStoredStudents();
@@ -48,6 +51,14 @@ function DiagnoseContent() {
     const submissions = getStoredSubmissions();
     const currentSub = submissions.find((s) => s.studentId === found.id) || SEED_SUBMISSIONS[0];
     setSubmission(currentSub);
+
+    // Default to the student's first erroneous response, or q3
+    const firstErr = currentSub.responses.find((r) => !r.isCorrect);
+    if (firstErr) {
+      setSelectedQuestionId(firstErr.questionId);
+    } else {
+      setSelectedQuestionId('q3');
+    }
   }, [studentIdParam]);
 
   const handleDecisionSave = (decision: TeacherDecisionType, finalVerdict: string) => {
@@ -154,6 +165,66 @@ function DiagnoseContent() {
             </div>
           </div>
         </div>
+
+        {/* Visual Cause Graph & Mental Model with Dynamic Item Selector */}
+        {(() => {
+          const activeQuestion =
+            FIXED_ASSESSMENT_ITEMS.find((q) => q.id === selectedQuestionId) || FIXED_ASSESSMENT_ITEMS[2];
+          const activeResponse = submission.responses.find((r) => r.questionId === activeQuestion.id);
+          const activeErrorSignature = detectErrorSignature(
+            activeQuestion,
+            activeResponse?.studentAnswer ?? null
+          );
+
+          return (
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-zinc-50 dark:bg-zinc-800/40 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800">
+                <div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">
+                    Inspect Student Error Breakdown
+                  </span>
+                  <span className="text-xs text-zinc-600 dark:text-zinc-400">
+                    Click any item to view its cognitive mental model & algorithmic decomposition:
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {FIXED_ASSESSMENT_ITEMS.map((item) => {
+                    const resp = submission.responses.find((r) => r.questionId === item.id);
+                    const isSelected = selectedQuestionId === item.id;
+                    const isErr = resp && !resp.isCorrect;
+
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => setSelectedQuestionId(item.id)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                          isSelected
+                            ? 'bg-indigo-600 text-white shadow-xs'
+                            : isErr
+                            ? 'bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800 hover:bg-rose-100'
+                            : 'bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50'
+                        }`}
+                      >
+                        <span>Item #{item.order} ({item.prompt})</span>
+                        <span className={isErr ? 'text-rose-500 font-extrabold' : 'text-emerald-500 font-extrabold'}>
+                          {isErr ? `✗ (${resp?.studentAnswer ?? '?'})` : '✓'}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <CauseGraph
+                question={activeQuestion}
+                studentAnswer={activeResponse?.studentAnswer ?? null}
+                errorSignature={activeErrorSignature}
+              />
+            </div>
+          );
+        })()}
 
         {/* Full Mathematical Evidence Breakdown */}
         <EvidenceList responses={submission.responses} />

@@ -36,7 +36,6 @@ function AssessmentContent() {
     q4: '',
     q5: '',
   });
-  const [showOCRMode, setShowOCRMode] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   useEffect(() => {
@@ -187,18 +186,6 @@ function AssessmentContent() {
               Fill 100% Correct
             </button>
           </div>
-
-          <div className="flex items-center gap-3">
-            <label className="flex items-center gap-2 cursor-pointer text-xs text-zinc-600 dark:text-zinc-400 font-medium">
-              <input
-                type="checkbox"
-                checked={showOCRMode}
-                onChange={(e) => setShowOCRMode(e.target.checked)}
-                className="rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500"
-              />
-              Simulate OCR Extraction View
-            </label>
-          </div>
         </div>
 
         {/* Progress Bar */}
@@ -215,8 +202,6 @@ function AssessmentContent() {
               item={item}
               studentAnswer={answers[item.id] || ''}
               onAnswerChange={(val) => handleAnswerChange(item.id, val)}
-              showOCRMode={showOCRMode}
-              rawText={answers[item.id]}
             />
           ))}
 
