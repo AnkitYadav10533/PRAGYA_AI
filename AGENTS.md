@@ -191,3 +191,11 @@ All three agents develop and verify against this exact demo story:
   - Reassessment: 5/5 (100%) or 8/10 (80%)
   - Improvement: +60% or +50% (Calculated from raw counts, zero fake percentages)
 
+---
+
+## 7. Strict Git No-Push Rule
+
+**MANDATORY USER INSTRUCTION:**
+- **NEVER** run `git push`, `git push origin <branch>`, or push commits to GitHub unless the user explicitly commands to do so.
+- All testing, building, and commits must remain local unless explicitly ordered otherwise.
+
